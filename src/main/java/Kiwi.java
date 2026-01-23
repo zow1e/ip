@@ -37,6 +37,21 @@ public class Kiwi {
                     case "list":
                         listTasks();
                         break;
+
+                    // delete item
+                    case "delete":
+                        if (tasks.isEmpty()) {
+                            throw new KiwiException("No items in list");
+                        } else if (parts.length<2) {
+                            throw new KiwiException("Please choose a task number to delete");
+                        } else {
+                            int itemIndex = Integer.parseInt(parts[1]);
+                            Task thisItem = tasks.remove(itemIndex-1);
+                            System.out.println("Deletion done for:\n"+thisItem.toString()+"\n");
+                            System.out.println("There are now "+tasks.size()+" tasks in the list");
+                        }
+                        break;
+                    
                     
                     // mark item as done
                     case "mark":

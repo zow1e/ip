@@ -1,3 +1,6 @@
+todo read book
+deadline 2103 /by 4pm
+event project meeting /from Mon 2pm /to 4pm
 list
 mark 2
 list
@@ -9,4 +12,6 @@ unmark 5
 deadline newtask
 event newevent
 oops
+delete 1
+list
 bye
