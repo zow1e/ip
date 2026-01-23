@@ -18,7 +18,9 @@ public class Kiwi {
         Scanner scanner = new Scanner(System.in);
         String input;
 
-        while (scanner.hasNextLine()) {
+        boolean isActive = true;
+
+        while (isActive && scanner.hasNextLine()) {
             input = scanner.nextLine().trim();
             String[] parts = input.split("\\s+", 2);
 
@@ -27,6 +29,7 @@ public class Kiwi {
                 // exit
                 case "bye":
                     System.out.println("\nByebye. Hope to see you again soon!");
+                    isActive = false;
                     break;
                 
                 // list out items
@@ -53,7 +56,7 @@ public class Kiwi {
                     } else {
                         int itemIndex = Integer.parseInt(parts[1]);
                         Task thisItem = tasks.get(itemIndex-1);
-                        thisItem.markTask();
+                        thisItem.unmarkTask();
                         System.out.println("ok... marked this as not done...\n"+thisItem.toString()+"\n");
                     }
                     break;
