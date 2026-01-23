@@ -1,5 +1,6 @@
 todo read book
 deadline 2103 /by 4pm
+list
 event project meeting /from Mon 2pm /to 4pm
 list
 mark 2
