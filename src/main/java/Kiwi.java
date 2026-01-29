@@ -5,10 +5,12 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Kiwi {
+
+    private static Ui ui;
+
     // data file path
     private static final String DATA_DIR = "data";
     private static final String DATA_FILE = DATA_DIR + File.separator + "kiwi.txt";
@@ -16,16 +18,15 @@ public class Kiwi {
     // store tasks; no more than 100 tasks
     private static ArrayList<Task> tasks = new ArrayList<>();
     public static void main(String[] args) {
-        String chatbotName = "Kiwi";
 
         // chatbot intro
-        System.out.println("Hello! I'm " + chatbotName);
-        System.out.println("What can I do for you? \n");
+        ui = new Ui();
+        ui.showWelcome();
 
         // load tasks from hard disk
         loadTasks();
 
-        listTasks();
+        ui.showTasks(tasks);
 
         // echo user input
         Scanner scanner = new Scanner(System.in);
@@ -49,7 +50,7 @@ public class Kiwi {
                     
                     // list out items
                     case "list":
-                        listTasks();
+                        ui.showTasks(tasks);
                         break;
 
                     // delete item
@@ -208,8 +209,7 @@ public class Kiwi {
     // create Task objects
     private static void addTask(Task task) {
         tasks.add(task);
-        System.out.println("Added: "+task.toString());
-        System.out.println("There are now "+tasks.size()+" tasks in the list\n");
+        ui.showAddTask(task, tasks.size());
     }
 
     private static void addDeadline(String input) throws KiwiException {
@@ -261,18 +261,7 @@ public class Kiwi {
         }
     }
 
-    private static void listTasks() {
-        if (tasks.isEmpty()) {
-            System.out.println("No tasks yet!");
-        } else {
-            System.out.println("Here are your tasks:");
-            for (int i = 0; i < tasks.size(); i++) {
-                Task currItem = tasks.get(i);
-                System.out.println((i + 1 )+ ". " + currItem.toString());
-            }
-        }
-        System.out.println("\n");
-    }
+
 
     private static void saveTasks() throws KiwiException {
         try {
