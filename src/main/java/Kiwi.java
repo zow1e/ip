@@ -5,27 +5,30 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 public class Kiwi {
+
+    private static Ui ui;
+    private static Storage storage;
+    private static TaskList tasks;
+
     // data file path
     private static final String DATA_DIR = "data";
     private static final String DATA_FILE = DATA_DIR + File.separator + "kiwi.txt";
 
-    // store tasks; no more than 100 tasks
-    private static ArrayList<Task> tasks = new ArrayList<>();
     public static void main(String[] args) {
-        String chatbotName = "Kiwi";
 
         // chatbot intro
-        System.out.println("Hello! I'm " + chatbotName);
-        System.out.println("What can I do for you? \n");
+        ui = new Ui();
+        ui.showWelcome();
 
         // load tasks from hard disk
-        loadTasks();
+        storage = new Storage(DATA_DIR, DATA_FILE);
+        tasks = new TaskList(storage.loadTasks());
 
-        listTasks();
+        ui.showTasks(tasks.getTasks());
 
         // echo user input
         Scanner scanner = new Scanner(System.in);
@@ -35,82 +38,61 @@ public class Kiwi {
 
         while (isActive && scanner.hasNextLine()) {
             input = scanner.nextLine().trim();
-            String[] parts = input.split("\\s+", 2);
-
 
             try {
-                switch (parts[0].toLowerCase()) {
+                Parser parsed = Parser.parse(input);
+                String command = parsed.getType().toLowerCase();
+                switch (command) {
                     // exit
                     case "bye":
-                        saveTasks();
-                        System.out.println("\nByebye. Hope to see you again soon!");
+                        storage.saveTasks(tasks.getTasks());
+                        ui.showBye();
                         isActive = false;
                         break;
                     
-                    // list out items
                     case "list":
-                        listTasks();
+                        ui.showTasks(tasks.getTasks());
                         break;
 
-                    // delete item
-                    case "delete":
-                        if (tasks.isEmpty()) {
-                            throw new KiwiException("No items in list");
-                        } else if (parts.length<2) {
-                            throw new KiwiException("Please choose a task number to delete");
-                        } else {
-                            int itemIndex = Integer.parseInt(parts[1]);
-                            Task thisItem = tasks.remove(itemIndex-1);
-                            System.out.println("Deletion done for:\n"+thisItem.toString()+"\n");
-                            System.out.println("There are now "+tasks.size()+" tasks in the list");
-                        }
-                        break;
-                    
-                    
-                    // mark item as done
-                    case "mark":
-                        if (tasks.isEmpty()) {
-                            throw new KiwiException("No items in list");
-                        } else if (parts.length<2) {
-                            throw new KiwiException("Please choose a task number to mark");
-                        } else {
-                            int itemIndex = Integer.parseInt(parts[1]);
-                            Task thisItem = tasks.get(itemIndex-1);
-                            thisItem.markTask();
-                            System.out.println("Great! Marked this as done!!\n"+thisItem.toString()+"\n");
-                        }
-                        break;
-                    
-                    // unmark item
-                    case "unmark":
-                        if (tasks.isEmpty()) {
-                            throw new KiwiException("No items in list");
-                        } else if (parts.length<2) {
-                            throw new KiwiException("Please choose a task number to unmark");
-                        } else {
-                            int itemIndex = Integer.parseInt(parts[1]);
-                            Task thisItem = tasks.get(itemIndex-1);
-                            thisItem.unmarkTask();
-                            System.out.println("ok... marked this as not done...\n"+thisItem.toString()+"\n");
-                        }
-                        break;
-                    
-                    // ToDo task
                     case "todo":
-                        if (parts.length < 2 || parts[1].trim().isEmpty()) {
-                            throw new KiwiException("The description of a todo cannot be empty");
-                        }
-                        addTask(new ToDo(parts[1]));
+                        Task currTask = new ToDo(parsed.getArg(0));
+                        tasks.add(currTask);
+                        ui.showAddTask(currTask, tasks.size());
                         break;
-                    // Deadline task
+                        
                     case "deadline":
-                        if (parts.length < 2) throw new KiwiException("Please provide a deadline task");
-                        addDeadline(parts[1]);
+                        String desc = parsed.getArg(0);
+                        String by = parsed.getArg(1);
+                        currTask = new Deadline(desc, by);
+                        tasks.add(currTask);
+                        ui.showAddTask(currTask, tasks.size());
                         break;
-                    //Event task
+                        
                     case "event":
-                        if (parts.length < 2) throw new KiwiException("Please provide an event task");
-                        addEvent(parts[1]);
+                        String evDesc = parsed.getArg(0);
+                        String from = parsed.getArg(1);
+                        String to = parsed.getArg(2);
+                        addTask(new Event(evDesc, from, to));
+                        break;
+                        
+                    case "mark":
+                        int markIdx = Integer.parseInt(parsed.getArg(0));
+                        Task markTask = tasks.mark(markIdx);
+                        markTask.markTask();
+                        ui.showMarked(markTask);
+                        break;
+                        
+                    case "unmark":
+                        int unmarkIdx = Integer.parseInt(parsed.getArg(0));
+                        Task unmarkTask = tasks.unmark(unmarkIdx);
+                        unmarkTask.unmarkTask();
+                        ui.showUnmarked(unmarkTask);
+                        break;
+                        
+                    case "delete":
+                        int delIdx = Integer.parseInt(parsed.getArg(0));
+                        Task deleted = tasks.delete(delIdx);
+                        ui.showDeleted(deleted, tasks.size());
                         break;
 
                 
@@ -130,86 +112,12 @@ public class Kiwi {
     }
 
 
-    private static void loadTasks() {
-        File dir = new File(DATA_DIR);
-        File file = new File(DATA_FILE);
-
-        // nothing to load if folder/file do not exist
-        if (!dir.exists()) return;
-        if (!file.exists()) return;
-
-        try {
-            // if exists, load existing data
-            Scanner s = new Scanner(file);
-            while (s.hasNextLine()) {
-                // expected format: type | doneBoolean | description | *date
-                String line = s.nextLine().trim();
-                String[] parts = line.split("\\|", -1);  // -1 = keep empty parts
-                for (int i = 0; i < parts.length; i++) {
-                    parts[i] = parts[i].trim();
-                }
-
-                // if corrupted data, skip the line
-                if (parts.length < 3) continue;
-
-                String type = parts[0];
-                boolean isDone = parts[1].equals("1");
-                String description = parts[2];
-
-                
-                Task currTask;
-                switch (type.toUpperCase()) {
-                    case "T":
-                        currTask = new ToDo(description);
-                        break;
-                    case "D":
-                        // Deadline: type | done | desc | date
-                        if (parts.length < 4) {
-                            continue;  // corrupted: missing date
-                        }
-                        currTask = new Deadline(description, parts[3].trim());
-                        break;
-                    case "E":
-                        // Event: type | done | desc | date/time
-                        if (parts.length < 4) {
-                            continue;  // corrupted: missing date/time
-                        }
-                        // parse date/time from parts[3] e.g., "Aug 6th 2 to 4pm"
-                            String eventDetails = parts[3].trim();
     
-                            // time
-                            String[] dateParts = eventDetails.split("to");
-                            if (dateParts.length < 2) {
-                                continue;  // corrupted: not enough parts for date + time
-                            }
-                            
-                            // time is stored in the last portion
-                            
-                            String from = dateParts[0].trim();
-                            String to = dateParts[1].trim();
-                            
-                            currTask = new Event(description, from, to);
-                        break;
-                    default:
-                        continue;  // unknown type: skip
-                }
-
-                if (isDone) currTask.markTask();
-                tasks.add(currTask);
-            }
-            s.close();
-        } catch (IOException e) {
-            // if no input, create empty list
-            tasks = new ArrayList<>();
-        }
-
-    }
 
     // create Task objects
     private static void addTask(Task task) {
         tasks.add(task);
-        System.out.println("Added: "+task.toString());
-        System.out.println("There are now "+tasks.size()+" tasks in the list\n");
+        ui.showAddTask(task, tasks.size());
     }
 
     private static void addDeadline(String input) throws KiwiException {
@@ -261,52 +169,9 @@ public class Kiwi {
         }
     }
 
-    private static void listTasks() {
-        if (tasks.isEmpty()) {
-            System.out.println("No tasks yet!");
-        } else {
-            System.out.println("Here are your tasks:");
-            for (int i = 0; i < tasks.size(); i++) {
-                Task currItem = tasks.get(i);
-                System.out.println((i + 1 )+ ". " + currItem.toString());
-            }
-        }
-        System.out.println("\n");
-    }
 
-    private static void saveTasks() throws KiwiException {
-        try {
-            File dir = new File(DATA_DIR);
-            // create data directory if it doesnt exist
-            if (!dir.exists()) dir.mkdir();
 
-            // write the data to text file
-            FileWriter fw = new FileWriter(DATA_FILE);
-            for (Task task : tasks) {
-                String status = task.getStatusIcon();
-                String doneBoolean = (status.equals("X")) ? "1" : "0";
-
-                if (task instanceof ToDo) {
-                    // T | done | description
-                    fw.write("T | " + doneBoolean + " | " + task.description + "\n");
-                } else if (task instanceof Deadline) {
-                    // D | done | description | date
-                    Deadline dl = (Deadline) task;
-                    String dueDate = dl.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    fw.write("D | " + doneBoolean + " | " + task.description + " | " + dueDate + "\n");
-                } else if (task instanceof Event) {
-                    // E | done | description | from-to
-                    Event ev = (Event) task;
-                    String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    String timeRange = ev.getFrom() + " to " + ev.getTo();
-                    fw.write("E | " + doneBoolean + " | " + task.description + " | " + eventDate + " " + timeRange + "\n");
-                }
-            }
-            fw.close();
-        } catch (IOException e) {
-            throw new KiwiException("Unable to save this task );");
-        }
-    }
+    
 
 }
 
