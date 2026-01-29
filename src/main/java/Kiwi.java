@@ -5,6 +5,8 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Kiwi {
     // data file path
@@ -172,24 +174,19 @@ public class Kiwi {
                         if (parts.length < 4) {
                             continue;  // corrupted: missing date/time
                         }
-                        // parse date/time from parts[3] e.g., "Aug 6th 2-4pm"
+                        // parse date/time from parts[3] e.g., "Aug 6th 2 to 4pm"
                             String eventDetails = parts[3].trim();
     
                             // time
-                            String[] dateParts = eventDetails.split("\\s+");
-                            if (dateParts.length < 3) {
+                            String[] dateParts = eventDetails.split("to");
+                            if (dateParts.length < 2) {
                                 continue;  // corrupted: not enough parts for date + time
                             }
                             
-                            // Time is usually the last part: "2-4pm"
-                            String timeStr = dateParts[dateParts.length - 1].trim();
-                            String[] timeParts = timeStr.split("-");
-                            if (timeParts.length != 2) {
-                                continue;  // corrupted: no "from-to" format
-                            }
+                            // time is stored in the last portion
                             
-                            String from = timeParts[0].trim();
-                            String to = timeParts[1].trim();
+                            String from = dateParts[0].trim();
+                            String to = dateParts[1].trim();
                             
                             currTask = new Event(description, from, to);
                         break;
@@ -208,7 +205,7 @@ public class Kiwi {
 
     }
 
-
+    // create Task objects
     private static void addTask(Task task) {
         tasks.add(task);
         System.out.println("Added: "+task.toString());
@@ -218,7 +215,8 @@ public class Kiwi {
     private static void addDeadline(String input) throws KiwiException {
         try {
             String[] fullLine = input.split(" /by ");
-            if (fullLine.length < 2) throw new KiwiException("Correct Deadline format: deadline <task> /by <date>");
+            if (fullLine.length < 2) throw new KiwiException
+                                    ("Correct Deadline format: deadline <task> /by <yyyy-MM-dd HHmm>");
 
             String desc = fullLine[0].trim();
             String dueDate = fullLine[1].trim();
@@ -226,15 +224,22 @@ public class Kiwi {
             if (desc.isEmpty()) throw new KiwiException("Deadline description cannot be empty");
             if (dueDate.isEmpty()) throw new KiwiException("Deadline due date cannot be empty");
 
-            addTask(new Deadline(desc, dueDate));
+            try {
+                // LocalDateTime dateTime = LocalDateTime.parse
+                //                          (dueDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH"));
+                addTask(new Deadline(desc, dueDate));
+            } catch (Exception e) {
+                throw new KiwiException("Invalid date format; use: <yyyy-MM-dd HHmm>");
+            }
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException("Correct Deadline format: deadline <task> /by <date>");
+            throw new KiwiException("Invalid date format; use: <yyyy-MM-dd HHmm>");
         }
     }
     private static void addEvent(String input) throws KiwiException {
         try {
             String[] fullLine = input.split(" /from | /to");
-            if (fullLine.length < 3) throw new KiwiException("Correct Event format: event <task> /from <start> /to <end>");
+            if (fullLine.length < 3) throw new KiwiException
+                                     ("Invalid date format; use: event <task> /from <yyyy-MM-dd HHmm> /to <HHmm>");
             String desc = fullLine[0].trim();
             String from = fullLine[1].trim();
             String to = fullLine[2].trim();
@@ -243,9 +248,16 @@ public class Kiwi {
             if (from.isEmpty()) throw new KiwiException("Event start time cannot be empty.");
             if (to.isEmpty()) throw new KiwiException("Event end time cannot be empty.");
 
-            addTask(new Event(desc, from, to));
+            try {
+                addTask(new Event(desc, from, to));
+            } catch (Exception e) {
+                throw new KiwiException
+                          ("Invalid date format; use: event <task> /from <yyyy-MM-dd HHmm> /to <HHmm>");
+            }
+            
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException("Correct Event format: event <task> /from <start> /to <end>");
+            throw new KiwiException
+                      ("Invalid date format; use: event <task> /from <yyyy-MM-dd HHmm> /to <HHmm>");
         }
     }
 
@@ -280,11 +292,14 @@ public class Kiwi {
                 } else if (task instanceof Deadline) {
                     // D | done | description | date
                     Deadline dl = (Deadline) task;
-                    fw.write("D | " + doneBoolean + " | " + task.description + " | " + dl.getDate() + "\n");
+                    String dueDate = dl.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+                    fw.write("D | " + doneBoolean + " | " + task.description + " | " + dueDate + "\n");
                 } else if (task instanceof Event) {
                     // E | done | description | from-to
                     Event ev = (Event) task;
-                    fw.write("E | " + doneBoolean + " | " + task.description + " | " + ev.getFrom() + "-" + ev.getTo() + "\n");
+                    String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+                    String timeRange = ev.getFrom() + " to " + ev.getTo();
+                    fw.write("E | " + doneBoolean + " | " + task.description + " | " + eventDate + " " + timeRange + "\n");
                 }
             }
             fw.close();

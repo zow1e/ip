@@ -1,7 +1,11 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class Task {
     
     protected String description;
     protected boolean isDone;
+    protected LocalDateTime dateTime;
 
     // constructor
     public Task(String description) {
@@ -23,8 +27,18 @@ public class Task {
     public void unmarkTask() {
         this.isDone = false;
     }
+
+    public LocalDateTime getDateTime() {
+        return this.dateTime;
+    }
+
+    public String getDateTimeString() {
+        if (dateTime == null) return "";
+        return dateTime.format(DateTimeFormatter.ofPattern("MMM d yyyy HHmm"));
+    }
     
     // display description
+    @Override
     public String toString() {
         String fullDesc = "[" + getStatusIcon() + "] " + description.toString();
         return fullDesc;

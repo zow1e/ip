@@ -1,21 +1,21 @@
 todo read book
-deadline 2103 /by May 5th
+deadline 2103 /by 2025-05-05 2359
 list
-event project meeting /from July 1st 2pm /to 4pm
+event project meeting /from 2025-07-01 1400 /to 1600
 list
 mark 2
 list
 unmark 2
 list
-todoS
+todo buy eggs
 mark 5
 unmark 5
 deadline newtask
 event newevent
 oops
 delete 1
-deadline return book /by June 6th
-event project meeting /from Aug 6th 2 /to 4pm
+deadline return book /by 2025-06-06 1700
+event project meeting /from 2025-08-08 1200 /to 1800
 mark 3
 mark 6
 list
