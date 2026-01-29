@@ -12,13 +12,12 @@ public class Kiwi {
 
     private static Ui ui;
     private static Storage storage;
+    private static TaskList tasks;
 
     // data file path
     private static final String DATA_DIR = "data";
     private static final String DATA_FILE = DATA_DIR + File.separator + "kiwi.txt";
 
-    // store tasks; no more than 100 tasks
-    private static ArrayList<Task> tasks = new ArrayList<>();
     public static void main(String[] args) {
 
         // chatbot intro
@@ -27,9 +26,9 @@ public class Kiwi {
 
         // load tasks from hard disk
         storage = new Storage(DATA_DIR, DATA_FILE);
-        tasks = storage.loadTasks();
+        tasks = new TaskList(storage.loadTasks());
 
-        ui.showTasks(tasks);
+        ui.showTasks(tasks.getTasks());
 
         // echo user input
         Scanner scanner = new Scanner(System.in);
@@ -46,23 +45,27 @@ public class Kiwi {
                 switch (command) {
                     // exit
                     case "bye":
-                        storage.saveTasks(tasks);
+                        storage.saveTasks(tasks.getTasks());
                         ui.showBye();
                         isActive = false;
                         break;
                     
                     case "list":
-                        ui.showTasks(tasks);
+                        ui.showTasks(tasks.getTasks());
                         break;
 
                     case "todo":
-                        addTask(new ToDo(parsed.getArg(0)));
+                        Task currTask = new ToDo(parsed.getArg(0));
+                        tasks.add(currTask);
+                        ui.showAddTask(currTask, tasks.size());
                         break;
                         
                     case "deadline":
                         String desc = parsed.getArg(0);
                         String by = parsed.getArg(1);
-                        addTask(new Deadline(desc, by));
+                        currTask = new Deadline(desc, by);
+                        tasks.add(currTask);
+                        ui.showAddTask(currTask, tasks.size());
                         break;
                         
                     case "event":
@@ -74,21 +77,21 @@ public class Kiwi {
                         
                     case "mark":
                         int markIdx = Integer.parseInt(parsed.getArg(0));
-                        Task markTask = tasks.get(markIdx - 1);
+                        Task markTask = tasks.mark(markIdx);
                         markTask.markTask();
                         ui.showMarked(markTask);
                         break;
                         
                     case "unmark":
                         int unmarkIdx = Integer.parseInt(parsed.getArg(0));
-                        Task unmarkTask = tasks.get(unmarkIdx - 1);
+                        Task unmarkTask = tasks.unmark(unmarkIdx);
                         unmarkTask.unmarkTask();
                         ui.showUnmarked(unmarkTask);
                         break;
                         
                     case "delete":
                         int delIdx = Integer.parseInt(parsed.getArg(0));
-                        Task deleted = tasks.remove(delIdx - 1);
+                        Task deleted = tasks.delete(delIdx);
                         ui.showDeleted(deleted, tasks.size());
                         break;
 
