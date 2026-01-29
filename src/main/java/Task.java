@@ -2,7 +2,6 @@ public class Task {
     
     protected String description;
     protected boolean isDone;
-    protected String date;
 
     // constructor
     public Task(String description) {
