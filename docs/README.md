@@ -20,9 +20,15 @@ Example: `keyword (optional arguments)`
 expected output
 ```
 
-## Feature ABC
+## Test saving function
 
-// Feature details
+// Load saved tasks upon start
+
+// hard coded tasks in kiwi.txt for test case
+```
+E | 0 | project meeting | 2pm-4pm
+T | 0 | read book
+```
 
 
 ## Feature XYZ

@@ -1,0 +1,6 @@
+E | 0 | project meeting | 2pm-4pm
+T | 0 | read book
+D | 1 | 2103 | May 5th
+E | 0 | project meeting | July 1st 2pm-4pm
+D | 0 | return book | June 6th
+E | 1 | project meeting | Aug 6th 2-4pm
