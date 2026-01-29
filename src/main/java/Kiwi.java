@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 public class Kiwi {
 
     private static Ui ui;
+    private static Storage storage;
 
     // data file path
     private static final String DATA_DIR = "data";
@@ -24,7 +25,8 @@ public class Kiwi {
         ui.showWelcome();
 
         // load tasks from hard disk
-        loadTasks();
+        storage = new Storage(DATA_DIR, DATA_FILE);
+        tasks = storage.loadTasks();
 
         ui.showTasks(tasks);
 
@@ -43,7 +45,7 @@ public class Kiwi {
                 switch (parts[0].toLowerCase()) {
                     // exit
                     case "bye":
-                        saveTasks();
+                        storage.saveTasks(tasks);
                         System.out.println("\nByebye. Hope to see you again soon!");
                         isActive = false;
                         break;
@@ -131,80 +133,7 @@ public class Kiwi {
     }
 
 
-    private static void loadTasks() {
-        File dir = new File(DATA_DIR);
-        File file = new File(DATA_FILE);
-
-        // nothing to load if folder/file do not exist
-        if (!dir.exists()) return;
-        if (!file.exists()) return;
-
-        try {
-            // if exists, load existing data
-            Scanner s = new Scanner(file);
-            while (s.hasNextLine()) {
-                // expected format: type | doneBoolean | description | *date
-                String line = s.nextLine().trim();
-                String[] parts = line.split("\\|", -1);  // -1 = keep empty parts
-                for (int i = 0; i < parts.length; i++) {
-                    parts[i] = parts[i].trim();
-                }
-
-                // if corrupted data, skip the line
-                if (parts.length < 3) continue;
-
-                String type = parts[0];
-                boolean isDone = parts[1].equals("1");
-                String description = parts[2];
-
-                
-                Task currTask;
-                switch (type.toUpperCase()) {
-                    case "T":
-                        currTask = new ToDo(description);
-                        break;
-                    case "D":
-                        // Deadline: type | done | desc | date
-                        if (parts.length < 4) {
-                            continue;  // corrupted: missing date
-                        }
-                        currTask = new Deadline(description, parts[3].trim());
-                        break;
-                    case "E":
-                        // Event: type | done | desc | date/time
-                        if (parts.length < 4) {
-                            continue;  // corrupted: missing date/time
-                        }
-                        // parse date/time from parts[3] e.g., "Aug 6th 2 to 4pm"
-                            String eventDetails = parts[3].trim();
     
-                            // time
-                            String[] dateParts = eventDetails.split("to");
-                            if (dateParts.length < 2) {
-                                continue;  // corrupted: not enough parts for date + time
-                            }
-                            
-                            // time is stored in the last portion
-                            
-                            String from = dateParts[0].trim();
-                            String to = dateParts[1].trim();
-                            
-                            currTask = new Event(description, from, to);
-                        break;
-                    default:
-                        continue;  // unknown type: skip
-                }
-
-                if (isDone) currTask.markTask();
-                tasks.add(currTask);
-            }
-            s.close();
-        } catch (IOException e) {
-            // if no input, create empty list
-            tasks = new ArrayList<>();
-        }
-
-    }
 
     // create Task objects
     private static void addTask(Task task) {
@@ -263,39 +192,7 @@ public class Kiwi {
 
 
 
-    private static void saveTasks() throws KiwiException {
-        try {
-            File dir = new File(DATA_DIR);
-            // create data directory if it doesnt exist
-            if (!dir.exists()) dir.mkdir();
-
-            // write the data to text file
-            FileWriter fw = new FileWriter(DATA_FILE);
-            for (Task task : tasks) {
-                String status = task.getStatusIcon();
-                String doneBoolean = (status.equals("X")) ? "1" : "0";
-
-                if (task instanceof ToDo) {
-                    // T | done | description
-                    fw.write("T | " + doneBoolean + " | " + task.description + "\n");
-                } else if (task instanceof Deadline) {
-                    // D | done | description | date
-                    Deadline dl = (Deadline) task;
-                    String dueDate = dl.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    fw.write("D | " + doneBoolean + " | " + task.description + " | " + dueDate + "\n");
-                } else if (task instanceof Event) {
-                    // E | done | description | from-to
-                    Event ev = (Event) task;
-                    String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    String timeRange = ev.getFrom() + " to " + ev.getTo();
-                    fw.write("E | " + doneBoolean + " | " + task.description + " | " + eventDate + " " + timeRange + "\n");
-                }
-            }
-            fw.close();
-        } catch (IOException e) {
-            throw new KiwiException("Unable to save this task );");
-        }
-    }
+    
 
 }
 
