@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
+
 public class Kiwi {
 
     private static Ui ui;
@@ -38,82 +39,57 @@ public class Kiwi {
 
         while (isActive && scanner.hasNextLine()) {
             input = scanner.nextLine().trim();
-            String[] parts = input.split("\\s+", 2);
-
 
             try {
-                switch (parts[0].toLowerCase()) {
+                Parser parsed = Parser.parse(input);
+                String command = parsed.getType().toLowerCase();
+                switch (command) {
                     // exit
                     case "bye":
                         storage.saveTasks(tasks);
-                        System.out.println("\nByebye. Hope to see you again soon!");
+                        ui.showBye();
                         isActive = false;
                         break;
                     
-                    // list out items
                     case "list":
                         ui.showTasks(tasks);
                         break;
 
-                    // delete item
-                    case "delete":
-                        if (tasks.isEmpty()) {
-                            throw new KiwiException("No items in list");
-                        } else if (parts.length<2) {
-                            throw new KiwiException("Please choose a task number to delete");
-                        } else {
-                            int itemIndex = Integer.parseInt(parts[1]);
-                            Task thisItem = tasks.remove(itemIndex-1);
-                            System.out.println("Deletion done for:\n"+thisItem.toString()+"\n");
-                            System.out.println("There are now "+tasks.size()+" tasks in the list");
-                        }
-                        break;
-                    
-                    
-                    // mark item as done
-                    case "mark":
-                        if (tasks.isEmpty()) {
-                            throw new KiwiException("No items in list");
-                        } else if (parts.length<2) {
-                            throw new KiwiException("Please choose a task number to mark");
-                        } else {
-                            int itemIndex = Integer.parseInt(parts[1]);
-                            Task thisItem = tasks.get(itemIndex-1);
-                            thisItem.markTask();
-                            System.out.println("Great! Marked this as done!!\n"+thisItem.toString()+"\n");
-                        }
-                        break;
-                    
-                    // unmark item
-                    case "unmark":
-                        if (tasks.isEmpty()) {
-                            throw new KiwiException("No items in list");
-                        } else if (parts.length<2) {
-                            throw new KiwiException("Please choose a task number to unmark");
-                        } else {
-                            int itemIndex = Integer.parseInt(parts[1]);
-                            Task thisItem = tasks.get(itemIndex-1);
-                            thisItem.unmarkTask();
-                            System.out.println("ok... marked this as not done...\n"+thisItem.toString()+"\n");
-                        }
-                        break;
-                    
-                    // ToDo task
                     case "todo":
-                        if (parts.length < 2 || parts[1].trim().isEmpty()) {
-                            throw new KiwiException("The description of a todo cannot be empty");
-                        }
-                        addTask(new ToDo(parts[1]));
+                        addTask(new ToDo(parsed.getArg(0)));
                         break;
-                    // Deadline task
+                        
                     case "deadline":
-                        if (parts.length < 2) throw new KiwiException("Please provide a deadline task");
-                        addDeadline(parts[1]);
+                        String desc = parsed.getArg(0);
+                        String by = parsed.getArg(1);
+                        addTask(new Deadline(desc, by));
                         break;
-                    //Event task
+                        
                     case "event":
-                        if (parts.length < 2) throw new KiwiException("Please provide an event task");
-                        addEvent(parts[1]);
+                        String evDesc = parsed.getArg(0);
+                        String from = parsed.getArg(1);
+                        String to = parsed.getArg(2);
+                        addTask(new Event(evDesc, from, to));
+                        break;
+                        
+                    case "mark":
+                        int markIdx = Integer.parseInt(parsed.getArg(0));
+                        Task markTask = tasks.get(markIdx - 1);
+                        markTask.markTask();
+                        ui.showMarked(markTask);
+                        break;
+                        
+                    case "unmark":
+                        int unmarkIdx = Integer.parseInt(parsed.getArg(0));
+                        Task unmarkTask = tasks.get(unmarkIdx - 1);
+                        unmarkTask.unmarkTask();
+                        ui.showUnmarked(unmarkTask);
+                        break;
+                        
+                    case "delete":
+                        int delIdx = Integer.parseInt(parsed.getArg(0));
+                        Task deleted = tasks.remove(delIdx - 1);
+                        ui.showDeleted(deleted, tasks.size());
                         break;
 
                 

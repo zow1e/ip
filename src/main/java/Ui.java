@@ -27,5 +27,21 @@ public class Ui {
         System.out.println("There are now " + total + " tasks in the list\n");
     }
 
+    public void showMarked(Task task) {
+        System.out.println("Great! Marked this as done!!\n"+task.toString()+"\n");
+    }
+
+    public void showUnmarked(Task task) {
+        System.out.println("ok... marked this as not done...\n"+task.toString()+"\n");
+    }
+
+    public void showDeleted(Task task, int size) {
+        System.out.println("Deletion done for:\n"+task.toString()+"\n");
+        System.out.println("There are now "+size+" tasks in the list");
+    }
+
+    public void showBye() {
+        System.out.println("\nByebye. Hope to see you again soon!");
+    }
     
 }

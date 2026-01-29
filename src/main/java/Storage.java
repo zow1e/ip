@@ -117,7 +117,7 @@ public class Storage {
                 } else if (task instanceof Event) {
                     // E | done | description | from-to
                     Event ev = (Event) task;
-                    String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+                    String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String timeRange = ev.getFrom() + " to " + ev.getTo();
                     fw.write("E | " + doneBoolean + " | " + task.description + " | " + eventDate + " " + timeRange + "\n");
                 }
