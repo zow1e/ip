@@ -1,3 +1,4 @@
+package kiwi.helper;
 public class Parser {
     
     public static Parser parse(String input) throws KiwiException {

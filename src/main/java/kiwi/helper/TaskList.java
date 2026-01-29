@@ -1,4 +1,7 @@
+package kiwi.helper;
 import java.util.ArrayList;
+
+import kiwi.build.Task;
 
 public class TaskList {
     private ArrayList<Task> tasks;

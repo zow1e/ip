@@ -1,6 +1,13 @@
+package kiwi.build;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import kiwi.helper.KiwiException;
+import kiwi.helper.Parser;
+import kiwi.helper.Storage;
+import kiwi.helper.TaskList;
+import kiwi.helper.Ui;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -119,59 +126,6 @@ public class Kiwi {
         tasks.add(task);
         ui.showAddTask(task, tasks.size());
     }
-
-    private static void addDeadline(String input) throws KiwiException {
-        try {
-            String[] fullLine = input.split(" /by ");
-            if (fullLine.length < 2) throw new KiwiException
-                                    ("Correct Deadline format: deadline <task> /by <yyyy-MM-dd HHmm>");
-
-            String desc = fullLine[0].trim();
-            String dueDate = fullLine[1].trim();
-
-            if (desc.isEmpty()) throw new KiwiException("Deadline description cannot be empty");
-            if (dueDate.isEmpty()) throw new KiwiException("Deadline due date cannot be empty");
-
-            try {
-                // LocalDateTime dateTime = LocalDateTime.parse
-                //                          (dueDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH"));
-                addTask(new Deadline(desc, dueDate));
-            } catch (Exception e) {
-                throw new KiwiException("Invalid date format; use: <yyyy-MM-dd HHmm>");
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException("Invalid date format; use: <yyyy-MM-dd HHmm>");
-        }
-    }
-    private static void addEvent(String input) throws KiwiException {
-        try {
-            String[] fullLine = input.split(" /from | /to");
-            if (fullLine.length < 3) throw new KiwiException
-                                     ("Invalid date format; use: event <task> /from <yyyy-MM-dd HHmm> /to <HHmm>");
-            String desc = fullLine[0].trim();
-            String from = fullLine[1].trim();
-            String to = fullLine[2].trim();
-
-            if (desc.isEmpty()) throw new KiwiException("Event desription cannot be empty.");
-            if (from.isEmpty()) throw new KiwiException("Event start time cannot be empty.");
-            if (to.isEmpty()) throw new KiwiException("Event end time cannot be empty.");
-
-            try {
-                addTask(new Event(desc, from, to));
-            } catch (Exception e) {
-                throw new KiwiException
-                          ("Invalid date format; use: event <task> /from <yyyy-MM-dd HHmm> /to <HHmm>");
-            }
-            
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException
-                      ("Invalid date format; use: event <task> /from <yyyy-MM-dd HHmm> /to <HHmm>");
-        }
-    }
-
-
-
-    
 
 }
 
