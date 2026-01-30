@@ -2,32 +2,30 @@ package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Event extends Task{
-    
-    protected String from;
-    protected String to;
+public class Event extends Task {
+    private LocalDateTime fromTime;
+    private LocalDateTime toTime;
 
     public Event(String description, String from, String to) {
         super(description);
-        
-        this.dateTime = LocalDateTime.parse
-                       (from, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-        this.from = from.split(" ")[1];
-        this.to = to;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+        this.fromTime = LocalDateTime.parse(from, fmt);
+        this.toTime = LocalDateTime.parse(to, fmt);
+        this.dateTime = fromTime;
     }
 
-    public String getFrom() {
-        return this.from;
+    public LocalDateTime getFrom() {
+        return fromTime; 
     }
-
-    public String getTo() {
-        return this.to;
+    public LocalDateTime getTo() { 
+        return toTime; 
     }
-
 
     @Override
     public String toString() {
         String date = dateTime.format(DateTimeFormatter.ofPattern("MMM d yyyy"));
-        return "[E]"+super.toString() +" (at: "+ date  + " " + from + " to " + to + ")";
+        String fromStr = fromTime.format(DateTimeFormatter.ofPattern("HHmm"));
+        String toStr = toTime.format(DateTimeFormatter.ofPattern("HHmm"));
+        return "[E]" + super.toString() + " (at: " + date + " " + fromStr + " - " + toStr + ")";
     }
 }

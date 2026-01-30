@@ -77,20 +77,20 @@ public class Storage {
                             continue;  // corrupted: missing date/time
                         }
                         // parse date/time from parts[3] e.g., "Aug 6th 2 to 4pm"
-                            String eventDetails = parts[3].trim();
-    
-                            // time
-                            String[] dateParts = eventDetails.split("to");
-                            if (dateParts.length < 2) {
-                                continue;  // corrupted: not enough parts for date + time
-                            }
-                            
-                            // time is stored in the last portion
-                            
-                            String from = dateParts[0].trim();
-                            String to = dateParts[1].trim();
-                            
-                            currTask = new Event(description, from, to);
+                        String eventDetails = parts[3].trim();
+
+                        // time
+                        String[] dateParts = eventDetails.split("to");
+                        if (dateParts.length < 2) {
+                            continue;  // corrupted: not enough parts for date + time
+                        }
+                        
+                        // time is stored in the last portion
+                        
+                        String from = dateParts[0].trim();
+                        String to = dateParts[1].trim();
+                        
+                        currTask = new Event(description, from, to);
                         break;
                     default:
                         continue;  // unknown type: skip
