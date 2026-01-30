@@ -1,8 +1,16 @@
+/**
+ * Ui class for handling user interface actions.
+ * 
+ * Display relevant messages.
+ * 
+ */
+
+package kiwi.helper;
 import java.util.ArrayList;
-import java.util.Scanner;
+
+import kiwi.build.Task;
 
 public class Ui {
-    private Scanner scanner = new Scanner(System.in);
 
     public void showWelcome() {
         System.out.println("Hello! I'm Kiwi");

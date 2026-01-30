@@ -1,8 +1,23 @@
+/**
+ * Storage class for handling storage and loading of data.
+ * 
+ * Encapsulate Loading and Saving of tasks into text file.
+ * 
+ */
+
+package kiwi.helper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import kiwi.build.Deadline;
+import kiwi.build.Event;
+import kiwi.build.Task;
+import kiwi.build.ToDo;
+
 import java.time.format.DateTimeFormatter;
 
 public class Storage {
@@ -14,6 +29,7 @@ public class Storage {
         this.filePath = filePath;
     }
 
+    // Retrieves tasks from kiwi.txt file into taskList variable
     public ArrayList<Task> loadTasks() {
         File dir = new File(this.dirPath);
         File file = new File(this.filePath);
@@ -94,6 +110,7 @@ public class Storage {
     }
 
 
+    // Saves tasks into kiwi.txt file
     public void saveTasks(ArrayList<Task> taskList) throws KiwiException {
         try {
             File dir = new File(this.dirPath);
@@ -108,18 +125,18 @@ public class Storage {
 
                 if (task instanceof ToDo) {
                     // T | done | description
-                    fw.write("T | " + doneBoolean + " | " + task.description + "\n");
+                    fw.write("T | " + doneBoolean + " | " + task.getDescription() + "\n");
                 } else if (task instanceof Deadline) {
                     // D | done | description | date
                     Deadline dl = (Deadline) task;
-                    String dueDate = dl.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    fw.write("D | " + doneBoolean + " | " + task.description + " | " + dueDate + "\n");
+                    String dueDate = dl.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+                    fw.write("D | " + doneBoolean + " | " + task.getDescription() + " | " + dueDate + "\n");
                 } else if (task instanceof Event) {
                     // E | done | description | from-to
                     Event ev = (Event) task;
                     String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String timeRange = ev.getFrom() + " to " + ev.getTo();
-                    fw.write("E | " + doneBoolean + " | " + task.description + " | " + eventDate + " " + timeRange + "\n");
+                    fw.write("E | " + doneBoolean + " | " + task.getDescription() + " | " + eventDate + " " + timeRange + "\n");
                 }
             }
             fw.close();

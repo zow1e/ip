@@ -1,3 +1,4 @@
+package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -11,6 +12,10 @@ public class Task {
     public Task(String description) {
         this.description = description;
         this.isDone = false;
+    }
+
+    public String getDescription() {
+        return this.description;
     }
 
     // display task status

@@ -1,3 +1,4 @@
+package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -7,6 +8,10 @@ public class Deadline extends Task {
         super(description);
         this.dateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern
                                                        ("yyyy-MM-dd HHmm"));
+    }
+
+    public LocalDateTime getDateTime() {
+        return this.dateTime;
     }
 
     @Override
