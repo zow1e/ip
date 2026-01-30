@@ -73,24 +73,18 @@ public class Storage {
                         break;
                     case "E":
                         // Event: type | done | desc | date/time
-                        if (parts.length < 4) {
-                            continue;  // corrupted: missing date/time
-                        }
-                        // parse date/time from parts[3] e.g., "Aug 6th 2 to 4pm"
+                        if (parts.length < 4) continue;
                         String eventDetails = parts[3].trim();
-
-                        // time
-                        String[] dateParts = eventDetails.split("to");
-                        if (dateParts.length < 2) {
-                            continue;  // corrupted: not enough parts for date + time
-                        }
+                        String[] dateParts = eventDetails.split("\\s+to\\s+", 2);  // robust split
+                        if (dateParts.length < 2) continue;
                         
-                        // time is stored in the last portion
+                        String fromFull = dateParts[0].trim();  // "2026-01-31 1430"
+                        String toTime = dateParts[1].trim();    // "1600"
                         
-                        String from = dateParts[0].trim();
-                        String to = dateParts[1].trim();
+                        String[] fromParts = fromFull.split(" ");
+                        String toFull = fromParts[0] + " " + toTime;  // "2026-01-31 1600"
                         
-                        currTask = new Event(description, from, to);
+                        currTask = new Event(description, fromFull, toFull);
                         break;
                     default:
                         continue;  // unknown type: skip

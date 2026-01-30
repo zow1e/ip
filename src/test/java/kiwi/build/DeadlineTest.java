@@ -1,4 +1,4 @@
-package kiwi.build;
+package src.test.java.kiwi.build;
 
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;

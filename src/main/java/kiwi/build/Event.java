@@ -1,3 +1,9 @@
+/**
+ * Event class. 
+ * Parent class for general events.
+ * Initializes template format for an Event object.
+ */
+
 package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

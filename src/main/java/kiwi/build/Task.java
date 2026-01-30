@@ -1,3 +1,8 @@
+/**
+ * Task class. 
+ * Initializes template format for a showTasks object.
+ */
+
 package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

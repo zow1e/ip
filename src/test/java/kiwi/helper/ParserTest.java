@@ -1,4 +1,4 @@
-package kiwi.helper;
+package src.test.java.kiwi.helper;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

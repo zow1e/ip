@@ -1,7 +1,7 @@
 /**
  * Parser class for parsing user input.
  * 
- * Identify function fro user input.
+ * Identify function from user input.
  * 
  */
 

@@ -1,3 +1,9 @@
+/**
+ * Deadline class. 
+ * Child class of Event for deadline events.
+ * Initializes template format for an Deadline object with due date.
+ */
+
 package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
