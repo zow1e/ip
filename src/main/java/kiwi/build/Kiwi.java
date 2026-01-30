@@ -12,7 +12,6 @@
  * @throws KiwiExecption if error occurs.
  */
 
-
 package kiwi.build;
 
 import java.util.Scanner;
@@ -24,7 +23,6 @@ import kiwi.helper.TaskList;
 import kiwi.helper.Ui;
 
 import java.io.File;
-
 
 public class Kiwi {
 
@@ -67,7 +65,7 @@ public class Kiwi {
                         ui.showBye();
                         isActive = false;
                         break;
-                    
+
                     case "list":
                         ui.showTasks(tasks.getTasks());
                         break;
@@ -77,7 +75,7 @@ public class Kiwi {
                         tasks.add(currTask);
                         ui.showAddTask(currTask, tasks.size());
                         break;
-                        
+
                     case "deadline":
                         String desc = parsed.getArg(0);
                         String by = parsed.getArg(1);
@@ -85,7 +83,7 @@ public class Kiwi {
                         tasks.add(currTask);
                         ui.showAddTask(currTask, tasks.size());
                         break;
-                        
+
                     case "event":
                         String evDesc = parsed.getArg(0);
                         String from = parsed.getArg(1);
@@ -94,33 +92,32 @@ public class Kiwi {
                         tasks.add(currTask);
                         ui.showAddTask(currTask, tasks.size());
                         break;
-                        
+
                     case "mark":
                         int markIdx = Integer.parseInt(parsed.getArg(0));
                         Task markTask = tasks.mark(markIdx);
                         markTask.markTask();
                         ui.showMarked(markTask);
                         break;
-                        
+
                     case "unmark":
                         int unmarkIdx = Integer.parseInt(parsed.getArg(0));
                         Task unmarkTask = tasks.unmark(unmarkIdx);
                         unmarkTask.unmarkTask();
                         ui.showUnmarked(unmarkTask);
                         break;
-                        
+
                     case "delete":
                         int delIdx = Integer.parseInt(parsed.getArg(0));
                         Task deleted = tasks.delete(delIdx);
                         ui.showDeleted(deleted, tasks.size());
                         break;
 
-                
                     default:
-                        throw new KiwiException("Command not recognised!");    
+                        throw new KiwiException("Command not recognised!");
                 }
             } catch (KiwiException e) {
-                System.err.println(e.getMessage()+"\nPlease retry\n");
+                System.err.println(e.getMessage() + "\nPlease retry\n");
             } catch (NumberFormatException e) {
                 System.err.println("Please enter a valid task number\n");
             } catch (IndexOutOfBoundsException e) {
@@ -128,8 +125,7 @@ public class Kiwi {
             }
         }
         scanner.close();
-        
+
     }
 
 }
-
