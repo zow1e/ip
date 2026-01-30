@@ -15,6 +15,7 @@
 
 package kiwi.build;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import kiwi.helper.KiwiException;
@@ -114,6 +115,13 @@ public class Kiwi {
                         Task deleted = tasks.delete(delIdx);
                         ui.showDeleted(deleted, tasks.size());
                         break;
+
+                    case "find":
+                        String keyword = parsed.getArg(0).toLowerCase();
+                        ArrayList<Task> matching = tasks.find(keyword);
+                        ui.showMatchingTasks(matching);
+                        break;
+
 
                 
                     default:
