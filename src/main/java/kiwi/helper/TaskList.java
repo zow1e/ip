@@ -6,6 +6,7 @@
  */
 
 package kiwi.helper;
+
 import java.util.ArrayList;
 
 import kiwi.build.Task;
@@ -32,7 +33,7 @@ public class TaskList {
     public Task delete(int index) {
         return tasks.remove(index - 1);
     }
-    
+
     // Marks task as done
     public Task mark(int index) {
         Task t = tasks.get(index - 1);
@@ -55,4 +56,16 @@ public class TaskList {
     public int size() {
         return tasks.size();
     }
+
+    // find tasks that match search input
+    public ArrayList<Task> find(String keyword) {
+        ArrayList<Task> matches = new ArrayList<>();
+        for (Task t : tasks) {
+            if (t.getDescription().toLowerCase().contains(keyword)) {
+                matches.add(t);
+            }
+        }
+        return matches;
+    }
+
 }

@@ -6,6 +6,7 @@
  */
 
 package kiwi.helper;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,8 +38,10 @@ public class Storage {
         ArrayList<Task> taskList = new ArrayList<>();
 
         // nothing to load if folder/file do not exist
-        if (!dir.exists()) return taskList;
-        if (!file.exists()) return taskList;
+        if (!dir.exists())
+            return taskList;
+        if (!file.exists())
+            return taskList;
 
         try {
             // if exists, load existing data
@@ -46,19 +49,19 @@ public class Storage {
             while (s.hasNextLine()) {
                 // expected format: type | doneBoolean | description | *date
                 String line = s.nextLine().trim();
-                String[] parts = line.split("\\|", -1);  // -1 = keep empty parts
+                String[] parts = line.split("\\|", -1); // -1 = keep empty parts
                 for (int i = 0; i < parts.length; i++) {
                     parts[i] = parts[i].trim();
                 }
 
                 // if corrupted data, skip the line
-                if (parts.length < 3) continue;
+                if (parts.length < 3)
+                    continue;
 
                 String type = parts[0];
                 boolean isDone = parts[1].equals("1");
                 String description = parts[2];
 
-                
                 Task currTask;
                 switch (type.toUpperCase()) {
                     case "T":
@@ -67,30 +70,33 @@ public class Storage {
                     case "D":
                         // Deadline: type | done | desc | date
                         if (parts.length < 4) {
-                            continue;  // corrupted: missing date
+                            continue; // corrupted: missing date
                         }
                         currTask = new Deadline(description, parts[3].trim());
                         break;
                     case "E":
                         // Event: type | done | desc | date/time
-                        if (parts.length < 4) continue;
+                        if (parts.length < 4)
+                            continue;
                         String eventDetails = parts[3].trim();
-                        String[] dateParts = eventDetails.split("\\s+to\\s+", 2);  // robust split
-                        if (dateParts.length < 2) continue;
-                        
-                        String fromFull = dateParts[0].trim();  // "2026-01-31 1430"
-                        String toTime = dateParts[1].trim();    // "1600"
-                        
+                        String[] dateParts = eventDetails.split("\\s+to\\s+", 2); // robust split
+                        if (dateParts.length < 2)
+                            continue;
+
+                        String fromFull = dateParts[0].trim(); // "2026-01-31 1430"
+                        String toTime = dateParts[1].trim(); // "1600"
+
                         String[] fromParts = fromFull.split(" ");
-                        String toFull = fromParts[0] + " " + toTime;  // "2026-01-31 1600"
-                        
+                        String toFull = fromParts[0] + " " + toTime; // "2026-01-31 1600"
+
                         currTask = new Event(description, fromFull, toFull);
                         break;
                     default:
-                        continue;  // unknown type: skip
+                        continue; // unknown type: skip
                 }
 
-                if (isDone) currTask.markTask();
+                if (isDone)
+                    currTask.markTask();
                 taskList.add(currTask);
             }
             s.close();
@@ -103,13 +109,13 @@ public class Storage {
 
     }
 
-
     // Saves tasks into kiwi.txt file
     public void saveTasks(ArrayList<Task> taskList) throws KiwiException {
         try {
             File dir = new File(this.dirPath);
             // create data directory if it doesnt exist
-            if (!dir.exists()) dir.mkdir();
+            if (!dir.exists())
+                dir.mkdir();
 
             // write the data to text file
             FileWriter fw = new FileWriter(filePath);
@@ -130,7 +136,8 @@ public class Storage {
                     Event ev = (Event) task;
                     String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String timeRange = ev.getFrom() + " to " + ev.getTo();
-                    fw.write("E | " + doneBoolean + " | " + task.getDescription() + " | " + eventDate + " " + timeRange + "\n");
+                    fw.write("E | " + doneBoolean + " | " + task.getDescription() + " | " + eventDate + " " + timeRange
+                            + "\n");
                 }
             }
             fw.close();
