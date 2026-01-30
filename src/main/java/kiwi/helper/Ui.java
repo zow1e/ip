@@ -1,3 +1,10 @@
+/**
+ * Ui class for handling user interface actions.
+ * 
+ * Display relevant messages.
+ * 
+ */
+
 package kiwi.helper;
 import java.util.ArrayList;
 

@@ -1,7 +1,15 @@
+/**
+ * Storage class for handling storage and loading of data.
+ * 
+ * Encapsulate Loading and Saving of tasks into text file.
+ * 
+ */
+
 package kiwi.helper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -21,6 +29,7 @@ public class Storage {
         this.filePath = filePath;
     }
 
+    // Retrieves tasks from kiwi.txt file into taskList variable
     public ArrayList<Task> loadTasks() {
         File dir = new File(this.dirPath);
         File file = new File(this.filePath);
@@ -101,6 +110,7 @@ public class Storage {
     }
 
 
+    // Saves tasks into kiwi.txt file
     public void saveTasks(ArrayList<Task> taskList) throws KiwiException {
         try {
             File dir = new File(this.dirPath);

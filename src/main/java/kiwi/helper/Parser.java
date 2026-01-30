@@ -1,3 +1,10 @@
+/**
+ * Parser class for parsing user input.
+ * 
+ * Identify function fro user input.
+ * 
+ */
+
 package kiwi.helper;
 public class Parser {
     

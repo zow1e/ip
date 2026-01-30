@@ -1,6 +1,20 @@
+/**
+ * Start file for Kiwi.
+ * 
+ * Functions:
+ * Welcome message
+ * Bye message
+ * Load saved tasks
+ * List tasks
+ * Add task (Todo / Deadline / Event)
+ * Delete task
+ * 
+ * @throws KiwiExecption if error occurs.
+ */
+
+
 package kiwi.build;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import kiwi.helper.KiwiException;
@@ -10,9 +24,6 @@ import kiwi.helper.TaskList;
 import kiwi.helper.Ui;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 
 
 public class Kiwi {
@@ -79,7 +90,9 @@ public class Kiwi {
                         String evDesc = parsed.getArg(0);
                         String from = parsed.getArg(1);
                         String to = parsed.getArg(2);
-                        addTask(new Event(evDesc, from, to));
+                        currTask = new Event(evDesc, from, to);
+                        tasks.add(currTask);
+                        ui.showAddTask(currTask, tasks.size());
                         break;
                         
                     case "mark":
@@ -116,15 +129,6 @@ public class Kiwi {
         }
         scanner.close();
         
-    }
-
-
-    
-
-    // create Task objects
-    private static void addTask(Task task) {
-        tasks.add(task);
-        ui.showAddTask(task, tasks.size());
     }
 
 }
