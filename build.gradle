@@ -28,11 +28,11 @@ test {
 }
 
 application {
-    mainClass.set("kiwi.build.Duke")
+    mainClass.set("kiwi.build.Kiwi")
 }
 
 shadowJar {
-    archiveBaseName = "duke"
+    archiveBaseName = "kiwi"
     archiveClassifier = null
 }
 
