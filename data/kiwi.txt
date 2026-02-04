@@ -2,3 +2,5 @@ T | 0 | run
 T | 0 | rest
 T | 0 | climb
 T | 0 | ip
+T | 0 | run
+T | 0 | eat
