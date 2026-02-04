@@ -1,18 +1,16 @@
 /**
  * Represents a generic task managed by the Kiwi task manager.
- * 
+ *
  * Provides the base structure and common operations for all task types (ToDo, Deadline, Event).
  * Subclasses extend this class to add type-specific fields and behavior.
- * 
+ *
  * The task has a description, done status, and optional date/time information.
- * 
+ *
  * Example usage:
- * <pre>{@code
  * Task task = new Task("read book");
  * task.markTask();
  * System.out.println(task);  // [X] read book
- * }</pre>
- * 
+ *
  * @author [zow1e]
  * @see Deadline
  * @see Event
@@ -27,18 +25,18 @@ public class Task {
 
     /** The description of the task. */
     protected String description;
-    
+
     /** The completion status of the task. */
     protected boolean isDone;
-    
+
     /** The date/time associated with the task (nullable). */
     protected LocalDateTime dateTime;
 
     /**
      * Constructs a Task with the given description.
-     * 
+     *
      * Initializes the task as not done (isDone = false) and dateTime as null.
-     * 
+     *
      * @param description the task description (non-empty string)
      */
     public Task(String description) {
@@ -48,7 +46,7 @@ public class Task {
 
     /**
      * Returns the description of this task.
-     * 
+     *
      * @return the task description string
      */
     public String getDescription() {
@@ -57,9 +55,9 @@ public class Task {
 
     /**
      * Returns the status icon representing the task's completion status.
-     * 
+     *
      * Returns "X" if the task is done, " " (space) if not done.
-     * 
+     *
      * @return "X" for done tasks, " " for undone tasks
      */
     public String getStatusIcon() {
@@ -68,7 +66,7 @@ public class Task {
 
     /**
      * Marks this task as done.
-     * 
+     *
      * Sets the isDone field to true.
      */
     public void markTask() {
@@ -77,7 +75,7 @@ public class Task {
 
     /**
      * Marks this task as not done.
-     * 
+     *
      * Sets the isDone field to false.
      */
     public void unmarkTask() {
@@ -86,9 +84,9 @@ public class Task {
 
     /**
      * Returns the date/time associated with this task.
-     * 
+     *
      * Returns null for tasks without date/time (e.g., ToDo tasks).
-     * 
+     *
      * @return the LocalDateTime of the task, or null if none
      */
     public LocalDateTime getDateTime() {
@@ -97,24 +95,25 @@ public class Task {
 
     /**
      * Returns a formatted string representation of the task's date/time.
-     * 
+     *
      * Returns empty string if no dateTime is set. Uses format "MMM d yyyy HHmm".
-     * 
+     *
      * @return formatted date/time string, or empty string if no date/time
      */
     public String getDateTimeString() {
-        if (dateTime == null)
+        if (dateTime == null) {
             return "";
+        }
         return dateTime.format(DateTimeFormatter.ofPattern("MMM d yyyy HHmm"));
     }
 
     /**
      * Returns a string representation of this task for display.
-     * 
+     *
      * Format: [status] description
-     * 
+     *
      * Example: [ ] read book  or  [X] read book
-     * 
+     *
      * @return formatted display string of the task
      */
     @Override

@@ -1,20 +1,18 @@
 /**
  * A task that occurs at a specific time range (from-to).
- * 
- * Extends {@link Task} to represent event-type tasks that have a specific time range.
- * 
- * The event is stored with {@link LocalDateTime} objects for both start time (fromTime)
+ *
+ * Extends {@link.Task} to represent event-type tasks that have a specific time range.
+ *
+ * The event is stored with {@link.LocalDateTime} objects for both start time (fromTime)
  * and end time (toTime), parsed from input in the format "yyyy-MM-dd HHmm".
- * 
+ *
  * The dateTime field (inherited from Task) is set to the start time (fromTime) for
  * compatibility with other task types.
- * 
+ *
  * Example usage:
- * <pre>{@code
  * Event meeting = new Event("team meeting", "2026-02-05 1400", "2026-02-05 1530");
  * System.out.println(meeting);  // [E][ ] team meeting (at: Feb 5 2026 1400 - 1530)
- * }</pre>
- * 
+ *
  * @author [zow1e]
  * @see Task
  * @see Deadline
@@ -28,17 +26,17 @@ import java.time.format.DateTimeFormatter;
 public class Event extends Task {
     /** The start time of the event. */
     private LocalDateTime fromTime;
-    
+
     /** The end time of the event. */
     private LocalDateTime toTime;
 
     /**
      * Constructs an Event task with the given description and time range.
-     * 
+     *
      * Parses both from and to date strings using the pattern "yyyy-MM-dd HHmm".
      * Sets the inherited dateTime field to the start time (fromTime).
      * Throws DateTimeParseException if either time format is invalid.
-     * 
+     *
      * @param description the event description (non-empty)
      * @param from the start time in "yyyy-MM-dd HHmm" format (e.g., "2026-02-05 1400")
      * @param to the end time in "yyyy-MM-dd HHmm" format (e.g., "2026-02-05 1530")
@@ -54,7 +52,7 @@ public class Event extends Task {
 
     /**
      * Returns the start time of this Event.
-     * 
+     *
      * @return the LocalDateTime representing the start time
      */
     public LocalDateTime getFrom() {
@@ -63,7 +61,7 @@ public class Event extends Task {
 
     /**
      * Returns the end time of this Event.
-     * 
+     *
      * @return the LocalDateTime representing the end time
      */
     public LocalDateTime getTo() {
@@ -72,11 +70,11 @@ public class Event extends Task {
 
     /**
      * Returns a string representation of this Event task.
-     * 
+     *
      * Format: [E][status] description (at: MMM d yyyy HHmm - HHmm)
-     * 
+     *
      * Example: [E][X] team meeting (at: Feb 5 2026 1400 - 1530)
-     * 
+     *
      * @return formatted string of the event task
      */
     @Override
