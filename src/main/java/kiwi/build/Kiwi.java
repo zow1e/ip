@@ -1,21 +1,32 @@
 /**
- * Start file for Kiwi.
- * 
- * Functions:
- * Welcome message
- * Bye message
- * Load saved tasks
- * List tasks
- * Add task (Todo / Deadline / Event)
- * Delete task
- * 
- * @throws KiwiExecption if error occurs.
+ * Main entry point and command processor for the Kiwi task manager.
+ *
+ * Orchestrates the core application flow: initialization, command parsing,
+ * task management, storage, and UI interactions.
+ *
+ * Automatically loads/saves tasks to data/kiwi.txt.
+ *
+ * Example execution:
+ * Hello! I'm Kiwi
+ * What can i do for you?
+ * > todo buy milk
+ * Added: [T][ ] buy milk
+ * There are now 1 tasks in the list
+ * > bye
+ * Byebye. Hope to see you again soon!
+ *
+ * @author [zow1e]
+ * @see kiwi.helper.Parser
+ * @see kiwi.helper.Storage
+ * @see kiwi.helper.TaskList
+ * @see kiwi.helper.Ui
+ * @see kiwi.helper.KiwiException
  */
-
 package kiwi.build;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.File;
 
 import kiwi.helper.KiwiException;
 import kiwi.helper.Parser;
@@ -23,18 +34,31 @@ import kiwi.helper.Storage;
 import kiwi.helper.TaskList;
 import kiwi.helper.Ui;
 
-import java.io.File;
-
 public class Kiwi {
 
+    /** Handles all user interface output. */
     private static Ui ui;
+    
+    /** Manages persistent task storage. */
     private static Storage storage;
+    
+    /** Manages the task collection. */
     private static TaskList tasks;
 
-    // data file path
+    /** Directory for storing Kiwi data files. */
     private static final String DATA_DIR = "data";
+    
+    /** Full path to the kiwi.txt data file. */
     private static final String DATA_FILE = DATA_DIR + File.separator + "kiwi.txt";
 
+    /**
+     * Main entry point for the Kiwi application.
+     *
+     * Initializes UI, storage, and task list. Enters interactive command loop
+     * until "bye" command is received. Handles all exceptions gracefully.
+     *
+     * @param args command line arguments (unused)
+     */
     public static void main(String[] args) {
         // chatbot intro
         ui = new Ui();
@@ -96,14 +120,12 @@ public class Kiwi {
                     case "mark":
                         int markIdx = Integer.parseInt(parsed.getArg(0));
                         Task markTask = tasks.mark(markIdx);
-                        markTask.markTask();
                         ui.showMarked(markTask);
                         break;
 
                     case "unmark":
                         int unmarkIdx = Integer.parseInt(parsed.getArg(0));
                         Task unmarkTask = tasks.unmark(unmarkIdx);
-                        unmarkTask.unmarkTask();
                         ui.showUnmarked(unmarkTask);
                         break;
 
@@ -119,8 +141,6 @@ public class Kiwi {
                         ui.showMatchingTasks(matching);
                         break;
 
-
-                
                     default:
                         throw new KiwiException("Command not recognised!");
                 }
@@ -133,7 +153,5 @@ public class Kiwi {
             }
         }
         scanner.close();
-
     }
-
 }

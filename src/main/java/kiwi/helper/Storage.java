@@ -1,26 +1,24 @@
 /**
  * Manages persistent storage of tasks in a text file for the Kiwi task manager.
- * 
+ *
  * Handles loading tasks from `kiwi.txt` and saving tasks back to it using a custom
- * pipe-delimited format. Supports all task types: {@link ToDo}, {@link Deadline}, 
- * {@link Event}.
- * 
+ * pipe-delimited format. Supports all task types: {@link.ToDo}, {@link.Deadline},
+ * {@link.Event}.
+ *
  * File format examples:
  * <ul>
  * <li><code>T | 1 | buy groceries</code></li>
  * <li><code>D | 0 | submit report | 2026-02-05 2359</code></li>
  * <li><code>E | 0 | meeting | 2026-02-05 1400 to 1530</code></li>
  * </ul>
- * 
+ *
  * Automatically creates data directory if missing. Skips corrupted lines during load.
- * 
+ *
  * Example usage:
- * <pre>{@code
  * Storage storage = new Storage("./data", "./data/kiwi.txt");
  * ArrayList&lt;Task&gt; tasks = storage.loadTasks();
  * storage.saveTasks(tasks);
- * }</pre>
- * 
+ *
  * @author [zow1e]
  * @see Task
  * @see ToDo
@@ -32,6 +30,7 @@ package kiwi.helper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -45,16 +44,16 @@ import java.time.format.DateTimeFormatter;
 public class Storage {
     /** Directory path for storing Kiwi data files. */
     private String dirPath;
-    
+
     /** Full file path for the kiwi.txt data file. */
     private String filePath;
 
     /**
      * Constructs a Storage instance with specified directory and file paths.
-     * 
+     *
      * Paths are stored for use in load/save operations. Directory is created
      * automatically during save if missing.
-     * 
+     *
      * @param dirPath directory path (e.g., "./data")
      * @param filePath full file path (e.g., "./data/kiwi.txt")
      */
@@ -65,17 +64,17 @@ public class Storage {
 
     /**
      * Loads all tasks from the kiwi.txt file into an ArrayList.
-     * 
+     *
      * Parses pipe-delimited lines and reconstructs Task objects:
      * <ul>
      * <li>T | done | description</li>
      * <li>D | done | description | date</li>
      * <li>E | done | description | date from-to</li>
      * </ul>
-     * 
+     *
      * Skips corrupted lines and returns empty list if file/directory missing.
      * Marks tasks as done based on stored status.
-     * 
+     *
      * @return ArrayList containing all valid tasks from file
      */
     public ArrayList<Task> loadTasks() {
@@ -85,10 +84,12 @@ public class Storage {
         ArrayList<Task> taskList = new ArrayList<>();
 
         // nothing to load if folder/file do not exist
-        if (!dir.exists())
+        if (!dir.exists()) {
             return taskList;
-        if (!file.exists())
+        }
+        if (!file.exists()) {
             return taskList;
+        }
 
         try {
             // if exists, load existing data
@@ -102,8 +103,9 @@ public class Storage {
                 }
 
                 // if corrupted data, skip the line
-                if (parts.length < 3)
+                if (parts.length < 3) {
                     continue;
+                }
 
                 String type = parts[0];
                 boolean isDone = parts[1].equals("1");
@@ -111,39 +113,40 @@ public class Storage {
 
                 Task currTask;
                 switch (type.toUpperCase()) {
-                    case "T":
-                        currTask = new ToDo(description);
-                        break;
-                    case "D":
-                        // Deadline: type | done | desc | date
-                        if (parts.length < 4) {
-                            continue; // corrupted: missing date
-                        }
-                        currTask = new Deadline(description, parts[3].trim());
-                        break;
-                    case "E":
-                        // Event: type | done | desc | date/time
-                        if (parts.length < 4)
-                            continue;
-                        String eventDetails = parts[3].trim();
-                        String[] dateParts = eventDetails.split("\\s+to\\s+", 2); // robust split
-                        if (dateParts.length < 2)
-                            continue;
+                case "T":
+                    currTask = new ToDo(description);
+                    break;
+                case "D":
+                    // Deadline: type | done | desc | date
+                    if (parts.length < 4) {
+                        continue; // corrupted: missing date
+                    }
+                    currTask = new Deadline(description, parts[3].trim());
+                    break;
+                case "E":
+                    // Event: type | done | desc | date/time
+                    if (parts.length < 4)
+                        continue;
+                    String eventDetails = parts[3].trim();
+                    String[] dateParts = eventDetails.split("\\s+to\\s+", 2); // robust split
+                    if (dateParts.length < 2)
+                        continue;
 
-                        String fromFull = dateParts[0].trim(); // "2026-01-31 1430"
-                        String toTime = dateParts[1].trim(); // "1600"
+                    String fromFull = dateParts[0].trim(); // "2026-01-31 1430"
+                    String toTime = dateParts[1].trim(); // "1600"
 
-                        String[] fromParts = fromFull.split(" ");
-                        String toFull = fromParts[0] + " " + toTime; // "2026-01-31 1600"
+                    String[] fromParts = fromFull.split(" ");
+                    String toFull = fromParts[0] + " " + toTime; // "2026-01-31 1600"
 
-                        currTask = new Event(description, fromFull, toFull);
-                        break;
-                    default:
-                        continue; // unknown type: skip
+                    currTask = new Event(description, fromFull, toFull);
+                    break;
+                default:
+                    continue; // unknown type: skip
                 }
 
-                if (isDone)
+                if (isDone) {
                     currTask.markTask();
+                }
                 taskList.add(currTask);
             }
             s.close();
@@ -157,10 +160,10 @@ public class Storage {
 
     /**
      * Saves the given task list to the kiwi.txt file.
-     * 
+     *
      * Creates data directory if missing. Writes tasks in pipe-delimited format.
      * Overwrites existing file completely.
-     * 
+     *
      * @param taskList list of tasks to save
      * @throws KiwiException if file I/O fails
      */
@@ -168,8 +171,9 @@ public class Storage {
         try {
             File dir = new File(this.dirPath);
             // create data directory if it doesnt exist
-            if (!dir.exists())
+            if (!dir.exists()) {
                 dir.mkdir();
+            }
 
             // write the data to text file
             FileWriter fw = new FileWriter(filePath);
