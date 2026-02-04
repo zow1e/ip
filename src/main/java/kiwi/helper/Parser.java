@@ -1,31 +1,20 @@
 /**
  * Parses user input into structured command objects for the Kiwi task manager.
  *
- * Converts raw user input strings into {@link.Parser} objects containing the command
+ * Converts raw user input strings into {@link Parser} objects containing the command
  * type and arguments. Supports all Kiwi commands: todo, deadline, event, list, find,
  * mark, unmark, delete, bye.
  *
- * Validates input format and throws {@link.KiwiException} for invalid syntax.
+ * Validates input format and throws {@link KiwiException} for invalid syntax.
  *
- * Example usage:
- * Parser parser = Parser.parse("todo buy groceries");
- * System.out.println(parser.getType());  // "todo"
- * System.out.println(parser.getArg(0));  // "buy groceries"
- *
- * Parser dlParser = Parser.parse("deadline submit /by 2026-02-05 2359");
- * System.out.println(dlParser.getArg(1));  // "2026-02-05 2359"
- *
- * try {
- *     Parser.parse("todo");  // throws KiwiException
- * } catch (KiwiException e) {
- *     // handle "Todo description cannot be empty"
- * }
- *
- * @author [zow1e]
+ * @author zow1e
  * @see KiwiException
  */
 package kiwi.helper;
 
+/**
+ * Parser for converting user input into command structures.
+ */
 public class Parser {
 
     /** The command type parsed from user input (e.g., "todo", "deadline"). */
@@ -33,6 +22,20 @@ public class Parser {
 
     /** Arguments parsed from user input. */
     private String[] args;
+
+    /**
+     * Private constructor for creating Parser instances.
+     *
+     * Stores the command type and variable number of arguments using varargs.
+     * Intended for internal use by the static parse() method only.
+     *
+     * @param type command type (e.g., "todo", "deadline")
+     * @param args command arguments (variable length)
+     */
+    private Parser(String type, String... args) {
+        this.type = type;
+        this.args = args;
+    }
 
     /**
      * Parses the given user input into a structured Parser object.
@@ -108,20 +111,6 @@ public class Parser {
         default:
             throw new KiwiException("Unknown command: " + cmd);
         }
-    }
-
-    /**
-     * Private constructor for creating Parser instances.
-     *
-     * Stores the command type and variable number of arguments using varargs.
-     * Intended for internal use by the static parse() method only.
-     *
-     * @param type command type (e.g., "todo", "deadline")
-     * @param args command arguments (variable length)
-     */
-    private Parser(String type, String... args) {
-        this.type = type;
-        this.args = args;
     }
 
     /**

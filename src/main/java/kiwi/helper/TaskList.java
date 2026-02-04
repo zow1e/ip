@@ -4,13 +4,7 @@
  * Encapsulates all task list operations: add, delete, mark/unmark, find, and list.
  * Uses 1-based indexing for user-facing operations (delete 1 = remove first task).
  *
- * Example usage:
- * TaskList tasks = new TaskList();
- * tasks.add(new ToDo("buy milk"));
- * Task marked = tasks.mark(1);  // marks first task as done
- * ArrayList&lt;Task&gt; found = tasks.find("milk");  // returns matching tasks
- *
- * @author [zow1e]
+ * @author zow1e
  * @see Task
  * @see kiwi.build.ToDo
  * @see kiwi.build.Deadline
@@ -22,7 +16,11 @@ import java.util.ArrayList;
 
 import kiwi.build.Task;
 
+/**
+ * Manages a collection of Task objects.
+ */
 public class TaskList {
+
     /** The underlying ArrayList storing all tasks. */
     private ArrayList<Task> tasks;
 

@@ -2,24 +2,10 @@
  * Manages persistent storage of tasks in a text file for the Kiwi task manager.
  *
  * Handles loading tasks from `kiwi.txt` and saving tasks back to it using a custom
- * pipe-delimited format. Supports all task types: {@link.ToDo}, {@link.Deadline},
- * {@link.Event}.
+ * pipe-delimited format. Supports all task types: {@link ToDo}, {@link Deadline},
+ * {@link Event}.
  *
- * File format examples:
- * <ul>
- * <li><code>T | 1 | buy groceries</code></li>
- * <li><code>D | 0 | submit report | 2026-02-05 2359</code></li>
- * <li><code>E | 0 | meeting | 2026-02-05 1400 to 1530</code></li>
- * </ul>
- *
- * Automatically creates data directory if missing. Skips corrupted lines during load.
- *
- * Example usage:
- * Storage storage = new Storage("./data", "./data/kiwi.txt");
- * ArrayList&lt;Task&gt; tasks = storage.loadTasks();
- * storage.saveTasks(tasks);
- *
- * @author [zow1e]
+ * @author zow1e
  * @see Task
  * @see ToDo
  * @see Deadline
@@ -30,7 +16,7 @@ package kiwi.helper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -39,9 +25,11 @@ import kiwi.build.Event;
 import kiwi.build.Task;
 import kiwi.build.ToDo;
 
-import java.time.format.DateTimeFormatter;
-
+/**
+ * Handles task persistence in file storage.
+ */
 public class Storage {
+
     /** Directory path for storing Kiwi data files. */
     private String dirPath;
 
@@ -129,7 +117,7 @@ public class Storage {
                         continue;
                     }
                     String eventDetails = parts[3].trim();
-                    String[] dateParts = eventDetails.split("\\s+to\\s+", 2); // robust split
+                    String[] dateParts = eventDetails.split("\\s+to\\s+", 2);
                     if (dateParts.length < 2) {
                         continue;
                     }
@@ -189,15 +177,18 @@ public class Storage {
                 } else if (task instanceof Deadline) {
                     // D | done | description | date
                     Deadline dl = (Deadline) task;
-                    String dueDate = dl.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    fw.write("D | " + doneBoolean + " | " + task.getDescription() + " | " + dueDate + "\n");
+                    String dueDate = dl.getDateTime()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+                    fw.write("D | " + doneBoolean + " | " + task.getDescription() + " | "
+                            + dueDate + "\n");
                 } else if (task instanceof Event) {
                     // E | done | description | from-to
                     Event ev = (Event) task;
-                    String eventDate = ev.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    String eventDate = ev.getDateTime()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String timeRange = ev.getFrom() + " to " + ev.getTo();
-                    fw.write("E | " + doneBoolean + " | " + task.getDescription() + " | " + eventDate + " " + timeRange
-                            + "\n");
+                    fw.write("E | " + doneBoolean + " | " + task.getDescription() + " | "
+                            + eventDate + " " + timeRange + "\n");
                 }
             }
             fw.close();
