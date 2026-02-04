@@ -1,17 +1,7 @@
 /**
  * Represents a generic task managed by the Kiwi task manager.
  *
- * Provides the base structure and common operations for all task types (ToDo, Deadline, Event).
- * Subclasses extend this class to add type-specific fields and behavior.
- *
- * The task has a description, done status, and optional date/time information.
- *
- * Example usage:
- * Task task = new Task("read book");
- * task.markTask();
- * System.out.println(task);  // [X] read book
- *
- * @author [zow1e]
+ * @author zow1e
  * @see Deadline
  * @see Event
  * @see ToDo
@@ -21,6 +11,9 @@ package kiwi.build;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Generic task class with description and completion status.
+ */
 public class Task {
 
     /** The description of the task. */
@@ -34,8 +27,6 @@ public class Task {
 
     /**
      * Constructs a Task with the given description.
-     *
-     * Initializes the task as not done (isDone = false) and dateTime as null.
      *
      * @param description the task description (non-empty string)
      */
@@ -56,18 +47,14 @@ public class Task {
     /**
      * Returns the status icon representing the task's completion status.
      *
-     * Returns "X" if the task is done, " " (space) if not done.
-     *
      * @return "X" for done tasks, " " for undone tasks
      */
     public String getStatusIcon() {
-        return (isDone ? "X" : " "); // mark done task with X
+        return (isDone ? "X" : " ");
     }
 
     /**
      * Marks this task as done.
-     *
-     * Sets the isDone field to true.
      */
     public void markTask() {
         this.isDone = true;
@@ -75,8 +62,6 @@ public class Task {
 
     /**
      * Marks this task as not done.
-     *
-     * Sets the isDone field to false.
      */
     public void unmarkTask() {
         this.isDone = false;
@@ -84,8 +69,6 @@ public class Task {
 
     /**
      * Returns the date/time associated with this task.
-     *
-     * Returns null for tasks without date/time (e.g., ToDo tasks).
      *
      * @return the LocalDateTime of the task, or null if none
      */
@@ -95,8 +78,6 @@ public class Task {
 
     /**
      * Returns a formatted string representation of the task's date/time.
-     *
-     * Returns empty string if no dateTime is set. Uses format "MMM d yyyy HHmm".
      *
      * @return formatted date/time string, or empty string if no date/time
      */
@@ -109,10 +90,6 @@ public class Task {
 
     /**
      * Returns a string representation of this task for display.
-     *
-     * Format: [status] description
-     *
-     * Example: [ ] read book  or  [X] read book
      *
      * @return formatted display string of the task
      */

@@ -4,14 +4,7 @@
  * Displays welcome messages, task lists, operation feedback, and errors using
  * consistent formatting with 1-based task numbering.
  *
- * All output goes to {@link System#out} (console). Designed for text-based CLI.
- *
- * Example output formats:
- * 1. [T][ ] buy milk
- * Added: [D][ ] submit (by: Feb 5 2026 2359)
- * Great! Marked this as done!! [T][X] buy milk
- *
- * @author [zow1e]
+ * @author zow1e
  * @see Task
  * @see TaskList
  */
@@ -21,6 +14,9 @@ import java.util.ArrayList;
 
 import kiwi.build.Task;
 
+/**
+ * User interface handler for console output.
+ */
 public class Ui {
 
     /**
@@ -40,11 +36,6 @@ public class Ui {
      *
      * Shows "No tasks yet!" if list is empty.
      *
-     * Output format:
-     * Here are your tasks:
-     * 1. [T][ ] buy milk
-     * 2. [D][ ] submit (by: Feb 5 2026 2359)
-     *
      * @param tasks list of tasks to display
      */
     public void showTasks(ArrayList<Task> tasks) {
@@ -63,10 +54,6 @@ public class Ui {
     /**
      * Shows confirmation when a task is added, including new total count.
      *
-     * Output format:
-     * Added: [T][ ] buy milk
-     * There are now 3 tasks in the list
-     *
      * @param task the newly added task
      * @param total current total number of tasks after adding
      */
@@ -78,10 +65,6 @@ public class Ui {
     /**
      * Shows confirmation when a task is marked as done.
      *
-     * Output format:
-     * Great! Marked this as done!!
-     * [T][X] buy milk
-     *
      * @param task the marked task
      */
     public void showMarked(Task task) {
@@ -91,10 +74,6 @@ public class Ui {
     /**
      * Shows confirmation when a task is unmarked (set as not done).
      *
-     * Output format:
-     * ok... marked this as not done...
-     * [T][ ] buy milk
-     *
      * @param task the unmarked task
      */
     public void showUnmarked(Task task) {
@@ -103,12 +82,6 @@ public class Ui {
 
     /**
      * Shows confirmation when a task is deleted, including new total count.
-     *
-     * Output format:
-     * Deletion done for:
-     * [T][ ] buy milk
-     *
-     * There are now 2 tasks in the list
      *
      * @param task the deleted task
      * @param size current total number of tasks after deletion
@@ -132,11 +105,6 @@ public class Ui {
      * Displays tasks matching a search keyword with 1-based numbering.
      *
      * Shows "No matching tasks found." if no matches.
-     *
-     * Output format:
-     * Here are the matching tasks in your list:
-     * 1. [T][ ] buy milk
-     * 2. [D][ ] buy bread
      *
      * @param matches list of matching tasks from search
      */
