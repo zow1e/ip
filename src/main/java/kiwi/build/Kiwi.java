@@ -36,7 +36,6 @@ public class Kiwi {
     private static final String DATA_FILE = DATA_DIR + File.separator + "kiwi.txt";
 
     public static void main(String[] args) {
-
         // chatbot intro
         ui = new Ui();
         ui.showWelcome();

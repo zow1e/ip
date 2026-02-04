@@ -1,4 +1,4 @@
-package src.test.java.kiwi.build;
+package kiwi.build;
 
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ public class DeadlineTest {
     public void constructor_validDateTime_setsCorrectly() {
         Deadline dl = new Deadline("test", "2026-01-31 1800");
         assertEquals("test", dl.getDescription());
-        assertFalse(dl.isDone);  // via super
+        assertFalse(dl.isDone); // via super
         LocalDateTime expected = LocalDateTime.parse("2026-01-31 1800", FORMATTER);
         assertEquals(expected, dl.getDateTime());
     }

@@ -1,16 +1,37 @@
 /**
- * Storage class for handling storage and loading of data.
+ * Manages persistent storage of tasks in a text file for the Kiwi task manager.
  * 
- * Encapsulate Loading and Saving of tasks into text file.
+ * Handles loading tasks from `kiwi.txt` and saving tasks back to it using a custom
+ * pipe-delimited format. Supports all task types: {@link ToDo}, {@link Deadline}, 
+ * {@link Event}.
  * 
+ * File format examples:
+ * <ul>
+ * <li><code>T | 1 | buy groceries</code></li>
+ * <li><code>D | 0 | submit report | 2026-02-05 2359</code></li>
+ * <li><code>E | 0 | meeting | 2026-02-05 1400 to 1530</code></li>
+ * </ul>
+ * 
+ * Automatically creates data directory if missing. Skips corrupted lines during load.
+ * 
+ * Example usage:
+ * <pre>{@code
+ * Storage storage = new Storage("./data", "./data/kiwi.txt");
+ * ArrayList&lt;Task&gt; tasks = storage.loadTasks();
+ * storage.saveTasks(tasks);
+ * }</pre>
+ * 
+ * @author [zow1e]
+ * @see Task
+ * @see ToDo
+ * @see Deadline
+ * @see Event
  */
-
 package kiwi.helper;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -22,15 +43,41 @@ import kiwi.build.ToDo;
 import java.time.format.DateTimeFormatter;
 
 public class Storage {
+    /** Directory path for storing Kiwi data files. */
     private String dirPath;
+    
+    /** Full file path for the kiwi.txt data file. */
     private String filePath;
 
+    /**
+     * Constructs a Storage instance with specified directory and file paths.
+     * 
+     * Paths are stored for use in load/save operations. Directory is created
+     * automatically during save if missing.
+     * 
+     * @param dirPath directory path (e.g., "./data")
+     * @param filePath full file path (e.g., "./data/kiwi.txt")
+     */
     public Storage(String dirPath, String filePath) {
         this.dirPath = dirPath;
         this.filePath = filePath;
     }
 
-    // Retrieves tasks from kiwi.txt file into taskList variable
+    /**
+     * Loads all tasks from the kiwi.txt file into an ArrayList.
+     * 
+     * Parses pipe-delimited lines and reconstructs Task objects:
+     * <ul>
+     * <li>T | done | description</li>
+     * <li>D | done | description | date</li>
+     * <li>E | done | description | date from-to</li>
+     * </ul>
+     * 
+     * Skips corrupted lines and returns empty list if file/directory missing.
+     * Marks tasks as done based on stored status.
+     * 
+     * @return ArrayList containing all valid tasks from file
+     */
     public ArrayList<Task> loadTasks() {
         File dir = new File(this.dirPath);
         File file = new File(this.filePath);
@@ -106,10 +153,17 @@ public class Storage {
         }
 
         return taskList;
-
     }
 
-    // Saves tasks into kiwi.txt file
+    /**
+     * Saves the given task list to the kiwi.txt file.
+     * 
+     * Creates data directory if missing. Writes tasks in pipe-delimited format.
+     * Overwrites existing file completely.
+     * 
+     * @param taskList list of tasks to save
+     * @throws KiwiException if file I/O fails
+     */
     public void saveTasks(ArrayList<Task> taskList) throws KiwiException {
         try {
             File dir = new File(this.dirPath);
@@ -142,7 +196,7 @@ public class Storage {
             }
             fw.close();
         } catch (IOException e) {
-            throw new KiwiException("Unable to save this task );");
+            throw new KiwiException("Unable to save this task");
         }
     }
 }

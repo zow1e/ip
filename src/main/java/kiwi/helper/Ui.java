@@ -1,10 +1,22 @@
 /**
- * Ui class for handling user interface actions.
+ * Handles all user interface output for the Kiwi task manager.
  * 
- * Display relevant messages.
+ * Displays welcome messages, task lists, operation feedback, and errors using
+ * consistent formatting with 1-based task numbering.
  * 
+ * All output goes to {@link System#out} (console). Designed for text-based CLI.
+ * 
+ * Example output formats:
+ * <ul>
+ * <li><code>1. [T][ ] buy milk</code></li>
+ * <li><code>Added: [D][ ] submit (by: Feb 5 2026 2359)</code></li>
+ * <li><code>Great! Marked this as done!! [T][X] buy milk</code></li>
+ * </ul>
+ * 
+ * @author [zow1e]
+ * @see Task
+ * @see TaskList
  */
-
 package kiwi.helper;
 
 import java.util.ArrayList;
@@ -13,11 +25,34 @@ import kiwi.build.Task;
 
 public class Ui {
 
+    /**
+     * Displays the welcome message when Kiwi starts.
+     * 
+     * Output:
+     * <pre>
+     * Hello! I'm Kiwi
+     * What can i do for you?
+     * </pre>
+     */
     public void showWelcome() {
         System.out.println("Hello! I'm Kiwi");
         System.out.println("What can i do for you?");
     }
 
+    /**
+     * Displays all tasks in the given list with 1-based numbering.
+     * 
+     * Shows "No tasks yet!" if list is empty.
+     * 
+     * Output format:
+     * <pre>
+     * Here are your tasks:
+     * 1. [T][ ] buy milk
+     * 2. [D][ ] submit (by: Feb 5 2026 2359)
+     * </pre>
+     * 
+     * @param tasks list of tasks to display
+     */
     public void showTasks(ArrayList<Task> tasks) {
         if (tasks.isEmpty()) {
             System.out.println("No tasks yet!");
@@ -31,29 +66,98 @@ public class Ui {
         System.out.println("\n");
     }
 
+    /**
+     * Shows confirmation when a task is added, including new total count.
+     * 
+     * Output format:
+     * <pre>
+     * Added: [T][ ] buy milk
+     * There are now 3 tasks in the list
+     * </pre>
+     * 
+     * @param task the newly added task
+     * @param total current total number of tasks after adding
+     */
     public void showAddTask(Task task, int total) {
         System.out.println("Added: " + task.toString());
         System.out.println("There are now " + total + " tasks in the list\n");
     }
 
+    /**
+     * Shows confirmation when a task is marked as done.
+     * 
+     * Output format:
+     * <pre>
+     * Great! Marked this as done!!
+     * [T][X] buy milk
+     * </pre>
+     * 
+     * @param task the marked task
+     */
     public void showMarked(Task task) {
         System.out.println("Great! Marked this as done!!\n" + task.toString() + "\n");
     }
 
+    /**
+     * Shows confirmation when a task is unmarked (set as not done).
+     * 
+     * Output format:
+     * <pre>
+     * ok... marked this as not done...
+     * [T][ ] buy milk
+     * </pre>
+     * 
+     * @param task the unmarked task
+     */
     public void showUnmarked(Task task) {
         System.out.println("ok... marked this as not done...\n" + task.toString() + "\n");
     }
 
+    /**
+     * Shows confirmation when a task is deleted, including new total count.
+     * 
+     * Output format:
+     * <pre>
+     * Deletion done for:
+     * [T][ ] buy milk
+     * 
+     * There are now 2 tasks in the list
+     * </pre>
+     * 
+     * @param task the deleted task
+     * @param size current total number of tasks after deletion
+     */
     public void showDeleted(Task task, int size) {
         System.out.println("Deletion done for:\n" + task.toString() + "\n");
         System.out.println("There are now " + size + " tasks in the list");
     }
 
+    /**
+     * Displays the goodbye message when Kiwi exits.
+     * 
+     * Output:
+     * <pre>
+     * Byebye. Hope to see you again soon!
+     * </pre>
+     */
     public void showBye() {
         System.out.println("\nByebye. Hope to see you again soon!");
     }
 
-    // show tasks that match search
+    /**
+     * Displays tasks matching a search keyword with 1-based numbering.
+     * 
+     * Shows "No matching tasks found." if no matches.
+     * 
+     * Output format:
+     * <pre>
+     * Here are the matching tasks in your list:
+     * 1. [T][ ] buy milk
+     * 2. [D][ ] buy bread
+     * </pre>
+     * 
+     * @param matches list of matching tasks from search
+     */
     public void showMatchingTasks(ArrayList<Task> matches) {
         System.out.println("Here are the matching tasks in your list:");
         if (matches.isEmpty()) {
@@ -65,6 +169,4 @@ public class Ui {
         }
         System.out.println();
     }
-
-
 }

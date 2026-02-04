@@ -1,4 +1,0 @@
-E | 0 | project meeting | 2025-07-01 1400 to 1600
-T | 0 | buy eggs
-E | 1 | project meeting | 2025-08-08 1200 to 1800
-T | 0 | read books

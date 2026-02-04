@@ -1,14 +1,59 @@
 /**
- * Parser class for parsing user input.
+ * Parses user input into structured command objects for the Kiwi task manager.
  * 
- * Identify function from user input.
+ * Converts raw user input strings into {@link Parser} objects containing the command
+ * type and arguments. Supports all Kiwi commands: todo, deadline, event, list, find,
+ * mark, unmark, delete, bye.
  * 
+ * Validates input format and throws {@link KiwiException} for invalid syntax.
+ * 
+ * Example usage:
+ * <pre>{@code
+ * Parser parser = Parser.parse("todo buy groceries");
+ * System.out.println(parser.getType());  // "todo"
+ * System.out.println(parser.getArg(0));  // "buy groceries"
+ * 
+ * Parser dlParser = Parser.parse("deadline submit /by 2026-02-05 2359");
+ * System.out.println(dlParser.getArg(1));  // "2026-02-05 2359"
+ * 
+ * try {
+ *     Parser.parse("todo");  // throws KiwiException
+ * } catch (KiwiException e) {
+ *     // handle "Todo description cannot be empty"
+ * }
+ * }</pre>
+ * 
+ * @author [zow1e]
+ * @see KiwiException
  */
-
 package kiwi.helper;
 
 public class Parser {
 
+    /** The command type parsed from user input (e.g., "todo", "deadline"). */
+    private String type;
+    
+    /** Arguments parsed from user input. */
+    private String[] args;
+
+    /**
+     * Parses the given user input into a structured Parser object.
+     * 
+     * Supports all Kiwi commands with format validation:
+     * <ul>
+     * <li>todo &lt;description&gt;</li>
+     * <li>deadline &lt;description&gt; /by &lt;date&gt;</li>
+     * <li>event &lt;description&gt; /from &lt;time&gt; /to &lt;time&gt;</li>
+     * <li>list</li>
+     * <li>find &lt;keyword&gt;</li>
+     * <li>mark/unmark/delete &lt;number&gt;</li>
+     * <li>bye</li>
+     * </ul>
+     * 
+     * @param input raw user input string (trimmed)
+     * @return Parser object containing command type and arguments
+     * @throws KiwiException if input format is invalid or command unknown
+     */
     public static Parser parse(String input) throws KiwiException {
         String[] parts = input.trim().split("\\s+", 2);
         String cmd = parts[0].toLowerCase();
@@ -67,23 +112,46 @@ public class Parser {
         }
     }
 
-    private String type;
-    private String[] args;
-
-    // private constructor
+    /**
+     * Private constructor for creating Parser instances.
+     * 
+     * Stores the command type and variable number of arguments using varargs.
+     * Intended for internal use by the static parse() method only.
+     * 
+     * @param type command type (e.g., "todo", "deadline")
+     * @param args command arguments (variable length)
+     */
     private Parser(String type, String... args) {
         this.type = type;
         this.args = args;
     }
 
+    /**
+     * Returns the command type parsed from user input.
+     * 
+     * @return command type string (e.g., "todo", "list", "bye")
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Returns all arguments parsed from user input.
+     * 
+     * @return array of argument strings
+     */
     public String[] getArgs() {
         return args;
     }
 
+    /**
+     * Returns the argument at the specified index, or empty string if out of bounds.
+     * 
+     * Safe accessor that prevents ArrayIndexOutOfBoundsException.
+     * 
+     * @param i argument index (0-based)
+     * @return argument at index i, or empty string if i >= args.length
+     */
     public String getArg(int i) {
         return i < args.length ? args[i] : "";
     }
