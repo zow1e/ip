@@ -37,9 +37,9 @@ public class Ui {
 
     /**
      * Displays all tasks in the given list with 1-based numbering.
-     * 
+     *
      * Shows "No tasks yet!" if list is empty.
-     * 
+     *
      * Output format:
      * Here are your tasks:
      * 1. [T][ ] buy milk

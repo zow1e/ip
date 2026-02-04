@@ -125,12 +125,14 @@ public class Storage {
                     break;
                 case "E":
                     // Event: type | done | desc | date/time
-                    if (parts.length < 4)
+                    if (parts.length < 4) {
                         continue;
+                    }
                     String eventDetails = parts[3].trim();
                     String[] dateParts = eventDetails.split("\\s+to\\s+", 2); // robust split
-                    if (dateParts.length < 2)
+                    if (dateParts.length < 2) {
                         continue;
+                    }
 
                     String fromFull = dateParts[0].trim(); // "2026-01-31 1430"
                     String toTime = dateParts[1].trim(); // "1600"

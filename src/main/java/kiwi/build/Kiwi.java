@@ -24,9 +24,9 @@
  */
 package kiwi.build;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.File;
 
 import kiwi.helper.KiwiException;
 import kiwi.helper.Parser;
@@ -83,66 +83,66 @@ public class Kiwi {
                 Parser parsed = Parser.parse(input);
                 String command = parsed.getType().toLowerCase();
                 switch (command) {
-                    // exit
-                    case "bye":
-                        storage.saveTasks(tasks.getTasks());
-                        ui.showBye();
-                        isActive = false;
-                        break;
+                // exit
+                case "bye":
+                    storage.saveTasks(tasks.getTasks());
+                    ui.showBye();
+                    isActive = false;
+                    break;
 
-                    case "list":
-                        ui.showTasks(tasks.getTasks());
-                        break;
+                case "list":
+                    ui.showTasks(tasks.getTasks());
+                    break;
 
-                    case "todo":
-                        Task currTask = new ToDo(parsed.getArg(0));
-                        tasks.add(currTask);
-                        ui.showAddTask(currTask, tasks.size());
-                        break;
+                case "todo":
+                    Task currTask = new ToDo(parsed.getArg(0));
+                    tasks.add(currTask);
+                    ui.showAddTask(currTask, tasks.size());
+                    break;
 
-                    case "deadline":
-                        String desc = parsed.getArg(0);
-                        String by = parsed.getArg(1);
-                        currTask = new Deadline(desc, by);
-                        tasks.add(currTask);
-                        ui.showAddTask(currTask, tasks.size());
-                        break;
+                case "deadline":
+                    String desc = parsed.getArg(0);
+                    String by = parsed.getArg(1);
+                    currTask = new Deadline(desc, by);
+                    tasks.add(currTask);
+                    ui.showAddTask(currTask, tasks.size());
+                    break;
 
-                    case "event":
-                        String evDesc = parsed.getArg(0);
-                        String from = parsed.getArg(1);
-                        String to = parsed.getArg(2);
-                        currTask = new Event(evDesc, from, to);
-                        tasks.add(currTask);
-                        ui.showAddTask(currTask, tasks.size());
-                        break;
+                case "event":
+                    String evDesc = parsed.getArg(0);
+                    String from = parsed.getArg(1);
+                    String to = parsed.getArg(2);
+                    currTask = new Event(evDesc, from, to);
+                    tasks.add(currTask);
+                    ui.showAddTask(currTask, tasks.size());
+                    break;
 
-                    case "mark":
-                        int markIdx = Integer.parseInt(parsed.getArg(0));
-                        Task markTask = tasks.mark(markIdx);
-                        ui.showMarked(markTask);
-                        break;
+                case "mark":
+                    int markIdx = Integer.parseInt(parsed.getArg(0));
+                    Task markTask = tasks.mark(markIdx);
+                    ui.showMarked(markTask);
+                    break;
 
-                    case "unmark":
-                        int unmarkIdx = Integer.parseInt(parsed.getArg(0));
-                        Task unmarkTask = tasks.unmark(unmarkIdx);
-                        ui.showUnmarked(unmarkTask);
-                        break;
+                case "unmark":
+                    int unmarkIdx = Integer.parseInt(parsed.getArg(0));
+                    Task unmarkTask = tasks.unmark(unmarkIdx);
+                    ui.showUnmarked(unmarkTask);
+                    break;
 
-                    case "delete":
-                        int delIdx = Integer.parseInt(parsed.getArg(0));
-                        Task deleted = tasks.delete(delIdx);
-                        ui.showDeleted(deleted, tasks.size());
-                        break;
+                case "delete":
+                    int delIdx = Integer.parseInt(parsed.getArg(0));
+                    Task deleted = tasks.delete(delIdx);
+                    ui.showDeleted(deleted, tasks.size());
+                    break;
 
-                    case "find":
-                        String keyword = parsed.getArg(0).toLowerCase();
-                        ArrayList<Task> matching = tasks.find(keyword);
-                        ui.showMatchingTasks(matching);
-                        break;
+                case "find":
+                    String keyword = parsed.getArg(0).toLowerCase();
+                    ArrayList<Task> matching = tasks.find(keyword);
+                    ui.showMatchingTasks(matching);
+                    break;
 
-                    default:
-                        throw new KiwiException("Command not recognised!");
+                default:
+                    throw new KiwiException("Command not recognised!");
                 }
             } catch (KiwiException e) {
                 System.err.println(e.getMessage() + "\nPlease retry\n");

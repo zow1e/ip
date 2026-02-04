@@ -17,8 +17,9 @@
  */
 package kiwi.build;
 
-import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 
 public class Deadline extends Task {
@@ -59,7 +60,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " +
-               dateTime.format(DateTimeFormatter.ofPattern("MMM d yyyy HHmm")) + ")";
+        return "[D]" + super.toString() + " (by: " 
+        + dateTime.format(DateTimeFormatter.ofPattern("MMM d yyyy HHmm")) + ")";
     }
 }
