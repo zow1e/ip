@@ -51,6 +51,7 @@ public class Kiwi {
     public Kiwi() {
         storage = new Storage(DATA_DIR, DATA_FILE);
         tasks = new TaskList(storage.loadTasks());
+        assert tasks != null : "TaskList should not be null after initialization";
     }
 
     /**
@@ -164,6 +165,9 @@ public class Kiwi {
             Parser parsed = Parser.parse(input);
             String command = parsed.getType().toLowerCase();
 
+            assert parsed != null : "Parser should not return a null object";
+            assert !command.isEmpty() : "Parsed command cannot be empty";
+
             switch (command) {
             case "bye":
                 storage.saveTasks(tasks.getTasks());
@@ -194,6 +198,7 @@ public class Kiwi {
 
             case "mark":
                 int markIdx = Integer.parseInt(parsed.getArg(0));
+                assert markIdx > 0 && markIdx <= tasks.size() : "Index to mark must be valid";
                 Task markTask = tasks.mark(markIdx);
                 return "Nice! I've marked this task as done:\n  " + markTask;
 
