@@ -11,7 +11,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-import java.util.ArrayList;
 
 /**
  * Controller for the main GUI.
