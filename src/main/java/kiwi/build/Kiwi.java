@@ -210,8 +210,8 @@ public class Kiwi {
 
             case "find":
                 String keyword = parsed.getArg(0).toLowerCase();
-                ArrayList<Task> matching = tasks.find(keyword);
-                return formatMatchingTasks(matching);
+                ArrayList<Task> matchingTasks = tasks.find(keyword);
+                return formatMatchingTasks(matchingTasks);
 
             default:
                 return "Command not recognised!";
