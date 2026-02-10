@@ -204,6 +204,7 @@ public class Kiwi {
 
             case "unmark":
                 int unmarkIdx = Integer.parseInt(parsed.getArg(0));
+                assert unmarkIdx > 0 && unmarkIdx <= tasks.size() : "Index to unmark must be valid";
                 Task unmarkTask = tasks.unmark(unmarkIdx);
                 return "OK, I've marked this task as not done yet:\n  " + unmarkTask;
 
