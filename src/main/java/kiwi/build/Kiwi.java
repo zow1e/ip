@@ -20,6 +20,8 @@ package kiwi.build;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import kiwi.helper.KiwiException;
 import kiwi.helper.Parser;
@@ -245,12 +247,11 @@ public class Kiwi {
      */
     private String formatTasks(ArrayList<Task> taskList) {
         if (taskList.isEmpty()) {
-            return "No tasks found.";
+            return "No matching tasks found.";
         }
-        StringBuilder sb = new StringBuilder("Here are the tasks:\n");
-        for (int i = 0; i < taskList.size(); i++) {
-            sb.append((i + 1)).append(". ").append(taskList.get(i)).append("\n");
-        }
+        return IntStream.range(0, taskList.size())
+            .mapToObj(index -> (index + 1) + ". " + taskList.get(index))
+            .collect(Collectors.joining("\n", "Here are the tasks:\n", ""));
     }
 
 
