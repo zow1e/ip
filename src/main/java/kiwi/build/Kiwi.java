@@ -39,11 +39,16 @@ public class Kiwi {
     /** Full path to the kiwi.txt data file. */
     private static final String DATA_FILE = DATA_DIR + File.separator + "kiwi.txt";
 
+    /** Error message for out of bounds index input. */
+    private static final String INVALID_IDX_MSG = "Please enter a valid task number\n";
+
     /** Manages persistent task storage. */
     private Storage storage;
 
     /** Manages the task collection. */
     private TaskList tasks;
+
+
 
     /**
      * Constructs a Kiwi instance and initializes storage and tasks.
@@ -146,9 +151,9 @@ public class Kiwi {
             } catch (KiwiException e) {
                 System.err.println(e.getMessage() + "\nPlease retry\n");
             } catch (NumberFormatException e) {
-                System.err.println("Please enter a valid task number\n");
+                System.err.println(INVALID_IDX_MSG);
             } catch (IndexOutOfBoundsException e) {
-                System.err.println("Task number does not exist\n");
+                System.err.println(INVALID_IDX_MSG);
             }
         }
         scanner.close();
@@ -174,7 +179,7 @@ public class Kiwi {
                 return "Byebye. Hope to see you again soon!";
 
             case "list":
-                return formatTaskList();
+                return formatTasks(tasks.getTasks());
 
             case "todo":
                 Task currTask = new ToDo(parsed.getArg(0));
@@ -198,7 +203,7 @@ public class Kiwi {
 
             case "mark":
                 int markIdx = Integer.parseInt(parsed.getArg(0));
-                assert markIdx > 0 && markIdx <= tasks.size() : "Index to mark must be valid";
+                assert markIdx > 0 && markIdx <= tasks.size() : INVALID_IDX_MSG;
                 Task markTask = tasks.mark(markIdx);
                 return "Nice! I've marked this task as done:\n  " + markTask;
 
@@ -216,7 +221,7 @@ public class Kiwi {
             case "find":
                 String keyword = parsed.getArg(0).toLowerCase();
                 ArrayList<Task> matchingTasks = tasks.find(keyword);
-                return formatMatchingTasks(matchingTasks);
+                return formatTasks(matchingTasks);
 
             default:
                 return "Command not recognised!";
@@ -225,25 +230,29 @@ public class Kiwi {
         } catch (KiwiException e) {
             return e.getMessage();
         } catch (NumberFormatException e) {
-            return "Please enter a valid task number";
+            return INVALID_IDX_MSG;
         } catch (IndexOutOfBoundsException e) {
-            return "Task number does not exist";
+            return INVALID_IDX_MSG;
         }
     }
 
+
     /**
-     * Formats the task list for display.
+     * Format TaskList for display.
      *
      * @return formatted task list
      */
-    private String formatTaskList() {
-        StringBuilder sb = new StringBuilder("Here are your tasks:\n");
-        ArrayList<Task> taskList = tasks.getTasks();
+    private String formatTasks(ArrayList<Task> taskList) {
+        if (taskList.isEmpty()) {
+            return "No tasks found.";
+        }
+        StringBuilder sb = new StringBuilder("Here are the tasks:\n");
         for (int i = 0; i < taskList.size(); i++) {
             sb.append((i + 1)).append(". ").append(taskList.get(i)).append("\n");
         }
         return sb.toString();
     }
+
 
     /**
      * Formats the add task response.
@@ -253,22 +262,5 @@ public class Kiwi {
      */
     private String formatAddTask(Task task) {
         return "Added: " + task + "\nThere are now " + tasks.size() + " tasks in the list";
-    }
-
-    /**
-     * Formats the matching tasks for display.
-     *
-     * @param matching the list of matching tasks
-     * @return formatted response
-     */
-    private String formatMatchingTasks(ArrayList<Task> matching) {
-        if (matching.isEmpty()) {
-            return "No matching tasks found.";
-        }
-        StringBuilder sb = new StringBuilder("Here are the matching tasks:\n");
-        for (int i = 0; i < matching.size(); i++) {
-            sb.append((i + 1)).append(". ").append(matching.get(i)).append("\n");
-        }
-        return sb.toString();
     }
 }
