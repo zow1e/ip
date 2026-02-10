@@ -250,7 +250,6 @@ public class Kiwi {
         for (int i = 0; i < taskList.size(); i++) {
             sb.append((i + 1)).append(". ").append(taskList.get(i)).append("\n");
         }
-        return sb.toString();
     }
 
 
