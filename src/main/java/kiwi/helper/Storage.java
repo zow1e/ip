@@ -16,6 +16,7 @@ package kiwi.helper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -159,41 +160,50 @@ public class Storage {
      */
     public void saveTasks(ArrayList<Task> taskList) throws KiwiException {
         try {
-            File dir = new File(this.dirPath);
+            File dataDir = new File(this.dirPath);
             // create data directory if it doesnt exist
-            if (!dir.exists()) {
-                dir.mkdir();
+            if (!dataDir.exists()) {
+                dataDir.mkdir();
             }
 
             // write the data to text file
             FileWriter fw = new FileWriter(filePath);
-            for (Task task : taskList) {
-                String status = task.getStatusIcon();
-                String doneBoolean = (status.equals("X")) ? "1" : "0";
+            PrintWriter pw = new PrintWriter(fw);
 
-                if (task instanceof ToDo) {
-                    // T | done | description
-                    fw.write("T | " + doneBoolean + " | " + task.getDescription() + "\n");
-                } else if (task instanceof Deadline) {
-                    // D | done | description | date
-                    Deadline dl = (Deadline) task;
-                    String dueDate = dl.getDateTime()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-                    fw.write("D | " + doneBoolean + " | " + task.getDescription() + " | "
-                            + dueDate + "\n");
-                } else if (task instanceof Event) {
-                    // E | done | description | from-to
-                    Event ev = (Event) task;
-                    String eventDate = ev.getDateTime()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                    String timeRange = ev.getFrom() + " to " + ev.getTo();
-                    fw.write("E | " + doneBoolean + " | " + task.getDescription() + " | "
-                            + eventDate + " " + timeRange + "\n");
-                }
-            }
+            taskList.stream()
+                .map(this::taskToPipeString)
+                .forEach(pw::println);
+
+            pw.close();
             fw.close();
+
         } catch (IOException e) {
             throw new KiwiException("Unable to save this task");
+        }
+    }
+
+    private String taskToPipeString(Task task) {
+        String status = task.getStatusIcon();
+        String isDone = (status.equals("X")) ? "1" : "0";
+
+        if (task instanceof ToDo) {
+            // T | done | description
+            return ("T | " + isDone + " | " + task.getDescription() + "\n");
+        } else if (task instanceof Deadline) {
+            // D | done | description | date
+            Deadline dl = (Deadline) task;
+            String dueDate = dl.getDateTime()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+            return ("D | " + isDone + " | " + task.getDescription() + " | "
+                    + dueDate + "\n");
+        } else {
+            // E | done | description | from-to
+            Event ev = (Event) task;
+            String eventDate = ev.getDateTime()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String timeRange = ev.getFrom() + " to " + ev.getTo();
+            return ("E | " + isDone + " | " + task.getDescription() + " | "
+                    + eventDate + " " + timeRange + "\n");
         }
     }
 }

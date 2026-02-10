@@ -20,6 +20,8 @@ package kiwi.build;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import kiwi.helper.KiwiException;
 import kiwi.helper.Parser;
@@ -265,10 +267,8 @@ public class Kiwi {
         if (matching.isEmpty()) {
             return "No matching tasks found.";
         }
-        StringBuilder sb = new StringBuilder("Here are the matching tasks:\n");
-        for (int i = 0; i < matching.size(); i++) {
-            sb.append((i + 1)).append(". ").append(matching.get(i)).append("\n");
-        }
-        return sb.toString();
+        return IntStream.range(0, matching.size())
+            .mapToObj(index -> (index + 1) + ". " + matching.get(index))
+            .collect(Collectors.joining("\n", "Here are the tasks:\n", ""));
     }
 }
