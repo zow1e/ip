@@ -11,6 +11,8 @@
 package kiwi.helper;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import kiwi.build.Task;
 
@@ -113,9 +115,9 @@ public class Ui {
         if (matches.isEmpty()) {
             System.out.println("No matching tasks found.");
         } else {
-            for (int i = 0; i < matches.size(); i++) {
-                System.out.println((i + 1) + "." + matches.get(i));
-            }
+            IntStream.range(0, matches.size())
+                .mapToObj(index -> (index + 1) + ". " + matches.get(index))
+                .forEach(System.out::println);
         }
         System.out.println();
     }
