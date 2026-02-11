@@ -13,6 +13,7 @@
 package kiwi.helper;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import kiwi.build.Task;
 
@@ -119,12 +120,8 @@ public class TaskList {
      * @return ArrayList of matching tasks
      */
     public ArrayList<Task> find(String keyword) {
-        ArrayList<Task> matches = new ArrayList<>();
-        for (Task t : tasks) {
-            if (t.getDescription().toLowerCase().contains(keyword)) {
-                matches.add(t);
-            }
-        }
-        return matches;
+        return (ArrayList<Task>) tasks.stream()
+            .filter(t -> t.getDescription().toLowerCase().contains(keyword))
+            .collect(Collectors.toList());
     }
 }
