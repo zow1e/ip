@@ -49,7 +49,7 @@ public class Event extends Task {
         this.toTime = parseDateTime(to.trim(), "event /to");
 
         if (this.toTime.isBefore(this.fromTime)) {
-            throw new IllegalArgumentException("End time cannot be before start time!");
+            throw new IllegalArgumentException("End time cannot be before start time!!");
         }
     }
 
