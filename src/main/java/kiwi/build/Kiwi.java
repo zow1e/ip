@@ -45,11 +45,14 @@ public class Kiwi {
     /** Error message for out of bounds index input. */
     private static final String INVALID_IDX_MSG = "Please enter a valid task number\n";
 
+    /** Error message for out of bounds index input. */
+    private static Ui ui = new Ui();
+
     /** Manages persistent task storage. */
-    private Storage storage;
+    private static Storage storage;
 
     /** Manages the task collection. */
-    private TaskList tasks;
+    private static TaskList tasks;
 
 
 
@@ -71,7 +74,6 @@ public class Kiwi {
      * @param args command line arguments (unused)
      */
     public static void main(String[] args) {
-        Ui ui = new Ui();
         ui.showWelcome();
 
         Storage storage = new Storage(DATA_DIR, DATA_FILE);
@@ -103,16 +105,14 @@ public class Kiwi {
 
                 case "todo":
                     Task currTask = new ToDo(parsed.getArg(0));
-                    tasks.add(currTask);
-                    ui.showAddTask(currTask, tasks.size());
+                    addTask(currTask);
                     break;
 
                 case "deadline":
                     String desc = parsed.getArg(0);
                     String by = parsed.getArg(1);
                     currTask = new Deadline(desc, by);
-                    tasks.add(currTask);
-                    ui.showAddTask(currTask, tasks.size());
+                    addTask(currTask);
                     break;
 
                 case "event":
@@ -120,8 +120,7 @@ public class Kiwi {
                     String from = parsed.getArg(1);
                     String to = parsed.getArg(2);
                     currTask = new Event(evDesc, from, to);
-                    tasks.add(currTask);
-                    ui.showAddTask(currTask, tasks.size());
+                    addTask(currTask);
                     break;
 
                 case "mark":
@@ -186,20 +185,20 @@ public class Kiwi {
 
             case "todo":
                 Task currTask = new ToDo(parsed.getArg(0));
-                return addTask(currTask);
+                return addTaskGui(currTask);
 
             case "deadline":
                 String desc = parsed.getArg(0);
                 String by = parsed.getArg(1);
                 currTask = new Deadline(desc, by);
-                return addTask(currTask);
+                return addTaskGui(currTask);
 
             case "event":
                 String evDesc = parsed.getArg(0);
                 String from = parsed.getArg(1);
                 String to = parsed.getArg(2);
                 currTask = new Event(evDesc, from, to);
-                return addTask(currTask);
+                return addTaskGui(currTask);
 
             case "mark":
                 int markIdx = Integer.parseInt(parsed.getArg(0));
@@ -253,47 +252,66 @@ public class Kiwi {
     }
 
     /**
-     * Checks for duplicate task then add the appropriate task
-     * and formats the add task response.
+     * Checks if there is an existing task with the same description.
      *
-     * @param task the new task
-     * @return formatted response
-     */
-    private String addTask(Task task) throws KiwiException {
-        Task finalTask = checkDuplicateDesc(task);
-        tasks.add(finalTask);
-        return "Added: " + task + "\nThere are now " + tasks.size() + " tasks in the list";
-    }
-
-    /**
-     * Checks if there is an existing task with the same description and, if so,
-     * lets the user decide whether to replace it.
+     * In CLI mode: prompts user to replace or keep the existing task.
+     * In GUI mode: returns a formatted message asking the user to decide.
      *
      * @param newTask the newly created task
+     * @param isGuiMode true if running in GUI mode, false for CLI
      * @return the task to keep (either newTask or an existing matching task)
-     * @throws KiwiException if user input is invalid or duplicate handling fails
+     * @throws KiwiException if duplicate handling fails
      */
-    private Task checkDuplicateDesc(Task task) throws KiwiException {
-        String newDesc = task.getDescription().toLowerCase();
+    private static Task checkDuplicateDesc(Task newTask, boolean isGuiMode) throws KiwiException {
+        String newDesc = newTask.getDescription().toLowerCase();
 
-        // find exact description match (case-insensitive)
         Optional<Task> duplicate = tasks.getTasks().stream()
             .filter(t -> t.getDescription().toLowerCase().equals(newDesc))
             .findFirst();
 
         if (duplicate.isEmpty()) {
-            return task; // No duplicate found
+            return newTask;
         }
 
         Task existing = duplicate.get();
+
+        if (isGuiMode) {
+            throw new KiwiException("Duplicate task found:\n  " + existing);
+        }
+
+        // CLI mode
         System.out.println("!! Duplicate task found: " + existing);
         System.out.print("Replace with new task? [y/n]: ");
 
         Scanner scanner = new Scanner(System.in);
         String choice = scanner.nextLine().trim().toLowerCase();
         scanner.close();
+        return choice.equals("y") ? newTask : existing;
+    }
 
-        return choice.equals("y") ? task : existing;
+    /**
+     * Adds a task and handles duplicates (for CLI mode).
+     *
+     * @param task the new task
+     * @return formatted response
+     */
+    private static void addTask(Task task) throws KiwiException {
+        Task finalTask = checkDuplicateDesc(task, false);
+        tasks.add(finalTask);
+        ui.showAddTask(finalTask, tasks.size());;
+    }
+
+    /**
+     * Adds a task and handles duplicates (for GUI mode).
+     *
+     * @param task the new task
+     * @return formatted response
+     * @throws KiwiException if duplicate found
+     */
+    private static String addTaskGui(Task task) throws KiwiException {
+        Task finalTask = checkDuplicateDesc(task, true);
+        tasks.add(finalTask);
+        return ("Added: " + task.toString() + "\nThere are now " + tasks.size() + " tasks in the list\n");
     }
 
 }

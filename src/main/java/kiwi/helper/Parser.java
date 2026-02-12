@@ -12,48 +12,35 @@
  */
 package kiwi.helper;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 /**
- * Parser for converting user input into command structures.
+ * Parse user input into componenets for easy processing.
  */
 public class Parser {
 
-    /** The command type parsed from user input (e.g., "todo", "deadline"). */
-    private String type;
+    /**
+     * DateTimeFormatter to ensure consitency of data.
+     */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
-    /** Arguments parsed from user input. */
+    private String type;
     private String[] args;
 
-    /**
-     * Private constructor for creating Parser instances.
-     *
-     * Stores the command type and variable number of arguments using varargs.
-     * Intended for internal use by the static parse() method only.
-     *
-     * @param type command type (e.g., "todo", "deadline")
-     * @param args command arguments (variable length)
-     */
     private Parser(String type, String... args) {
         this.type = type;
         this.args = args;
     }
 
     /**
-     * Parses the given user input into a structured Parser object.
+     * Parse user input to be handled by different Classes
      *
-     * Supports all Kiwi commands with format validation:
-     * <ul>
-     * <li>todo &lt;description&gt;</li>
-     * <li>deadline &lt;description&gt; /by &lt;date&gt;</li>
-     * <li>event &lt;description&gt; /from &lt;time&gt; /to &lt;time&gt;</li>
-     * <li>list</li>
-     * <li>find &lt;keyword&gt;</li>
-     * <li>mark/unmark/delete &lt;number&gt;</li>
-     * <li>bye</li>
-     * </ul>
-     *
-     * @param input raw user input string (trimmed)
-     * @return Parser object containing command type and arguments
-     * @throws KiwiException if input format is invalid or command unknown
+     * @param input the string command
+     * @throws KiwiException
      */
     public static Parser parse(String input) throws KiwiException {
         String[] parts = input.trim().split("\\s+", 2);
@@ -62,54 +49,111 @@ public class Parser {
         switch (cmd) {
         case "todo":
             if (parts.length < 2 || parts[1].trim().isEmpty()) {
-                throw new KiwiException("Todo description cannot be empty");
+                throw new KiwiException("Todo description cannot be empty!\n"
+                    + "Usage: todo <description>");
             }
             return new Parser("todo", parts[1].trim());
 
         case "deadline":
             if (parts.length < 2) {
-                throw new KiwiException("Deadline format: deadline <task> /by <date>");
+                throw new KiwiException("Missing deadline details!\n"
+                    + "Usage: deadline <description> /by yyyy-MM-dd HHmm");
             }
             String[] dlParts = parts[1].split(" /by ", 2);
             if (dlParts.length < 2) {
-                throw new KiwiException("Deadline format: deadline <task> /by <date>");
+                throw new KiwiException("Invalid deadline format!\n"
+                    + "Usage: deadline <description> /by yyyy-MM-dd HHmm\n"
+                        + "Example: deadline CS2103T /by 2026-02-15 2359");
             }
+
+            // Validate date/time
+            validateDateTime(dlParts[1].trim(), "deadline");
             return new Parser("deadline", dlParts[0].trim(), dlParts[1].trim());
 
         case "event":
             if (parts.length < 2) {
-                throw new KiwiException("Event format: event <task> /from <time> /to <time>");
+                throw new KiwiException("Missing event details!\n"
+                    + "Usage: event <description> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm");
             }
-            String[] evParts = parts[1].split(" /from | /to ", -1);
+            // Split on both /from and /to
+            String eventInput = parts[1];
+            if (!eventInput.contains("/from") || !eventInput.contains("/to")) {
+                throw new KiwiException("Invalid event format!\n"
+                    + "Usage: event <description> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm\n"
+                    + "Example: event meeting /from 2026-02-12 1400 /to 2026-02-12 1600");
+            }
+
+            String[] evParts = eventInput.split(" /from | /to ", -1);
             if (evParts.length < 3) {
-                throw new KiwiException("Event format: event <task> /from <time> /to <time>");
+                throw new KiwiException("Event needs both /from and /to!\n"
+                    + "Example: event meeting /from 2026-02-12 1400 /to 2026-02-12 1600");
             }
+
+            // Validate from/to times
+            validateDateTime(evParts[1].trim(), "event /from");
+            validateDateTime(evParts[2].trim(), "event /to");
+
             return new Parser("event", evParts[0].trim(), evParts[1].trim(), evParts[2].trim());
 
         case "list":
             return new Parser("list");
 
         case "find":
-            return new Parser("find");
+            if (parts.length < 2) {
+                throw new KiwiException("Find needs a keyword!\nUsage: find <keyword>");
+            }
+            return new Parser("find", parts[1].trim());
 
         case "mark":
         case "unmark":
         case "delete":
             if (parts.length < 2) {
-                throw new KiwiException(cmd + " needs task number");
+                throw new KiwiException(cmd.toUpperCase() + " needs task number!\nUsage: " + cmd + " <number>");
             }
             try {
                 int index = Integer.parseInt(parts[1].trim());
+                if (index < 1) {
+                    throw new KiwiException("Task number must be 1 or higher!");
+                }
                 return new Parser(cmd, String.valueOf(index));
             } catch (NumberFormatException e) {
-                throw new KiwiException("Invalid task number: " + parts[1]);
+                throw new KiwiException("Invalid task number: '" + parts[1] + "'\nEnter a number like '1', '2', etc.");
             }
 
         case "bye":
             return new Parser("bye");
 
         default:
-            throw new KiwiException("Unknown command: " + cmd);
+            throw new KiwiException("Unknown command: '" + cmd + "'\n"
+                + "Available: todo, deadline, event, list, find, mark, unmark, delete, bye");
+        }
+    }
+
+    /**
+     * Validates date/time string format.
+     * Accepts: yyyy-MM-dd HHmm (full datetime) or HHmm (time only, assumes today)
+     */
+    private static void validateDateTime(String dateTimeStr, String context) throws KiwiException {
+        if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) {
+            throw new KiwiException("Empty " + context + " date/time!");
+        }
+
+        String trimmed = dateTimeStr.trim();
+
+        try {
+            // Try time-only format (HHmm)
+            if (trimmed.length() == 4 && trimmed.matches("\\d{4}")) {
+                String todayStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                LocalDateTime.parse(todayStr + " " + trimmed, DATE_TIME_FORMATTER);
+                return;
+            }
+
+            // Try full datetime format (yyyy-MM-dd HHmm)
+            LocalDateTime.parse(trimmed, DATE_TIME_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new KiwiException("Invalid " + context + ": '" + trimmed + "'\n"
+                + "Use: yyyy-MM-dd HHmm (e.g. 2026-02-15 2359)\n"
+                + "Or:  HHmm (e.g. 2359)");
         }
     }
 

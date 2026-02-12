@@ -23,6 +23,7 @@ import java.util.Scanner;
 
 import kiwi.build.Deadline;
 import kiwi.build.Event;
+import kiwi.build.Kiwi;
 import kiwi.build.Task;
 import kiwi.build.ToDo;
 
@@ -141,6 +142,8 @@ public class Storage {
                 taskList.add(currTask);
             }
             s.close();
+        } catch (IllegalArgumentException e) {
+            e.getMessage();
         } catch (IOException e) {
             // if no input, create empty list
             taskList = new ArrayList<>();
