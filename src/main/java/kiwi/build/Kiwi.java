@@ -19,6 +19,7 @@ package kiwi.build;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -185,23 +186,20 @@ public class Kiwi {
 
             case "todo":
                 Task currTask = new ToDo(parsed.getArg(0));
-                tasks.add(currTask);
-                return formatAddTask(currTask);
+                return addTask(currTask);
 
             case "deadline":
                 String desc = parsed.getArg(0);
                 String by = parsed.getArg(1);
                 currTask = new Deadline(desc, by);
-                tasks.add(currTask);
-                return formatAddTask(currTask);
+                return addTask(currTask);
 
             case "event":
                 String evDesc = parsed.getArg(0);
                 String from = parsed.getArg(1);
                 String to = parsed.getArg(2);
                 currTask = new Event(evDesc, from, to);
-                tasks.add(currTask);
-                return formatAddTask(currTask);
+                return addTask(currTask);
 
             case "mark":
                 int markIdx = Integer.parseInt(parsed.getArg(0));
@@ -254,14 +252,48 @@ public class Kiwi {
             .collect(Collectors.joining("\n", "Here are the tasks:\n", ""));
     }
 
-
     /**
-     * Formats the add task response.
+     * Checks for duplicate task then add the appropriate task
+     * and formats the add task response.
      *
-     * @param task the task that was added
+     * @param task the new task
      * @return formatted response
      */
-    private String formatAddTask(Task task) {
+    private String addTask(Task task) throws KiwiException {
+        Task finalTask = checkDuplicateDesc(task);
+        tasks.add(finalTask);
         return "Added: " + task + "\nThere are now " + tasks.size() + " tasks in the list";
     }
+
+    /**
+     * Checks if there is an existing task with the same description and, if so,
+     * lets the user decide whether to replace it.
+     *
+     * @param newTask the newly created task
+     * @return the task to keep (either newTask or an existing matching task)
+     * @throws KiwiException if user input is invalid or duplicate handling fails
+     */
+    private Task checkDuplicateDesc(Task task) throws KiwiException {
+        String newDesc = task.getDescription().toLowerCase();
+
+        // find exact description match (case-insensitive)
+        Optional<Task> duplicate = tasks.getTasks().stream()
+            .filter(t -> t.getDescription().toLowerCase().equals(newDesc))
+            .findFirst();
+
+        if (duplicate.isEmpty()) {
+            return task; // No duplicate found
+        }
+
+        Task existing = duplicate.get();
+        System.out.println("!! Duplicate task found: " + existing);
+        System.out.print("Replace with new task? [y/n]: ");
+
+        Scanner scanner = new Scanner(System.in);
+        String choice = scanner.nextLine().trim().toLowerCase();
+        scanner.close();
+
+        return choice.equals("y") ? task : existing;
+    }
+
 }
