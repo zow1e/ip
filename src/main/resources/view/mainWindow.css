@@ -1,0 +1,54 @@
+/* Main window styling */
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Text field styling */
+#userInput {
+    -fx-padding: 8px;
+    -fx-font-size: 14px;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* Send button styling */
+#sendButton {
+    -fx-font-size: 14px;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 5;
+}
+
+/* Dialog box base styling - no background color */
+.dialog-box {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* User dialog - only label has color */
+.user-dialog {
+    -fx-background-color: transparent;
+}
+
+.user-dialog .label {
+    -fx-text-fill: #1565c0;
+    -fx-font-size: 14;
+    -fx-wrap-text: true;
+}
+
+/* Kiwi dialog - only label has color */
+.kiwi-dialog {
+    -fx-background-color: transparent;
+}
+
+.kiwi-dialog .label {
+    -fx-text-fill: #2e7d32;
+    -fx-font-size: 14;
+    -fx-wrap-text: true;
+}
+
+/* Label styling for dialogs */
+.label {
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+}

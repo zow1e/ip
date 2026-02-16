@@ -4,13 +4,26 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
 
-<fx:root alignment="TOP_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="400.0" type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<!-- DEFAULT LAYOUT: Avatar LEFT, Text RIGHT (perfect for Kiwi) -->
+<fx:root alignment="CENTER_LEFT" prefWidth="400.0" type="javafx.scene.layout.HBox" 
+         xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <children>
-    <Label fx:id="dialog" minHeight="-Infinity" text="Label" wrapText="true" />
-    <ImageView fx:id="displayPicture" fitHeight="84.0" fitWidth="90.0" pickOnBounds="true" preserveRatio="true" />
+    <ImageView fx:id="displayPicture" 
+               pickOnBounds="true" preserveRatio="true" 
+               fitWidth="80.0" fitHeight="80.0" />
+    
+    <!-- Gap between avatar and text -->
+    <Region prefWidth="12.0" HBox.hgrow="NEVER" />
+    
+    <Label fx:id="dialog" 
+           style="-fx-background-color: rgba(255,255,255,0.95); -fx-background-radius: 18px; -fx-padding: 12px 16px; -fx-text-fill: #333; -fx-font-size: 14px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 1, 1);"
+           wrapText="true" maxWidth="280.0" minHeight="20.0" />
   </children>
+  
   <padding>
-    <Insets bottom="15.0" left="5.0" right="5.0" top="15.0" />
+    <Insets bottom="8.0" left="12.0" right="12.0" top="8.0" />
   </padding>
 </fx:root>
