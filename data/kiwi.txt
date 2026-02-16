@@ -2,5 +2,5 @@ T | 0 | run
 T | 0 | rest
 T | 0 | climb
 T | 0 | ip
-T | 0 | run
-T | 0 | eat
+D | 0 | capstone | 2026-04-16 2359
+E | 0 | open house | 2026-03-07 1030 to 1930

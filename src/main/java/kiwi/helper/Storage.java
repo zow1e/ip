@@ -23,7 +23,6 @@ import java.util.Scanner;
 
 import kiwi.build.Deadline;
 import kiwi.build.Event;
-import kiwi.build.Kiwi;
 import kiwi.build.Task;
 import kiwi.build.ToDo;
 
@@ -73,83 +72,129 @@ public class Storage {
 
         ArrayList<Task> taskList = new ArrayList<>();
 
-        // nothing to load if folder/file do not exist
-        if (!dir.exists()) {
-            return taskList;
-        }
-        if (!file.exists()) {
+        if (!dir.exists() || !file.exists()) {
             return taskList;
         }
 
-        try {
-            // if exists, load existing data
-            Scanner s = new Scanner(file);
+        try (Scanner s = new Scanner(file)) {
             while (s.hasNextLine()) {
-                // expected format: type | doneBoolean | description | *date
-                String line = s.nextLine().trim();
-                String[] parts = line.split("\\|", -1); // -1 = keep empty parts
-                for (int i = 0; i < parts.length; i++) {
-                    parts[i] = parts[i].trim();
+                Task loadedTask = parseTaskLine(s.nextLine());
+                if (loadedTask != null) {
+                    taskList.add(loadedTask);
                 }
-
-                // if corrupted data, skip the line
-                if (parts.length < 3) {
-                    continue;
-                }
-
-                String type = parts[0];
-                boolean isDone = parts[1].equals("1");
-                String description = parts[2];
-
-                Task currTask;
-                switch (type.toUpperCase()) {
-                case "T":
-                    currTask = new ToDo(description);
-                    break;
-                case "D":
-                    // Deadline: type | done | desc | date
-                    if (parts.length < 4) {
-                        continue; // corrupted: missing date
-                    }
-                    currTask = new Deadline(description, parts[3].trim());
-                    break;
-                case "E":
-                    // Event: type | done | desc | date/time
-                    if (parts.length < 4) {
-                        continue;
-                    }
-                    String eventDetails = parts[3].trim();
-                    String[] dateParts = eventDetails.split("\\s+to\\s+", 2);
-                    if (dateParts.length < 2) {
-                        continue;
-                    }
-
-                    String fromFull = dateParts[0].trim(); // "2026-01-31 1430"
-                    String toTime = dateParts[1].trim(); // "1600"
-
-                    String[] fromParts = fromFull.split(" ");
-                    String toFull = fromParts[0] + " " + toTime; // "2026-01-31 1600"
-
-                    currTask = new Event(description, fromFull, toFull);
-                    break;
-                default:
-                    continue; // unknown type: skip
-                }
-
-                if (isDone) {
-                    currTask.markTask();
-                }
-                taskList.add(currTask);
             }
-            s.close();
-        } catch (IllegalArgumentException e) {
-            e.getMessage();
         } catch (IOException e) {
-            // if no input, create empty list
-            taskList = new ArrayList<>();
+            return new ArrayList<>();
         }
 
         return taskList;
+    }
+
+    /**
+     * Parses a single line from the storage file into a Task object.
+     *
+     * Expected format: type | doneBoolean | description | *date
+     * Skips corrupted lines silently during load.
+     *
+     * @param line the line to parse
+     * @return Task object if valid, null if corrupted
+     */
+    private Task parseTaskLine(String line) {
+        String[] parts = line.split("\\|", -1);
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].trim();
+        }
+
+        if (parts.length < 3) {
+            return null;
+        }
+
+        String type = parts[0];
+        boolean isDone = parts[1].equals("1");
+        String description = parts[2];
+
+        Task task = createTaskByType(type, description, parts);
+        if (task == null) {
+            return null;
+        }
+
+        if (isDone) {
+            task.markTask();
+        }
+        return task;
+    }
+
+    /**
+     * Creates a Task object based on type and parts.
+     *
+     * @param type task type (T, D, E)
+     * @param description task description
+     * @param parts parsed line parts from storage file
+     * @return Task object if valid, null if corrupted
+     */
+    private Task createTaskByType(String type, String description, String[] parts) {
+        try {
+            switch (type.toUpperCase()) {
+            case "T":
+                return new ToDo(description);
+
+            case "D":
+                if (parts.length < 4) {
+                    return null; // corrupted: missing date
+                }
+                return new Deadline(description, parts[3]);
+
+            case "E":
+                return parseEventTask(description, parts);
+
+            default:
+                return null; // unknown type
+            }
+        } catch (KiwiException e) {
+            // Skip corrupted tasks during load
+            return null;
+        } catch (IllegalArgumentException e) {
+            // Skip tasks with invalid format during load
+            return null;
+        }
+    }
+
+    /**
+     * Parses an Event task from storage format.
+     *
+     * @param description task description
+     * @param parts parsed line parts from storage file
+     * @return Event task if valid, null if corrupted
+     * @throws KiwiException if time input is invalid
+     * @throws IllegalArgumentException if event validation fails
+     */
+    private Task parseEventTask(String description, String[] parts) throws KiwiException {
+        if (parts.length < 4) {
+            return null;
+        }
+
+        String eventDetails = parts[3].trim();
+        String[] dateParts = eventDetails.split("\\s+to\\s+", 2);
+        if (dateParts.length < 2) {
+            return null;
+        }
+
+        String fromFull = dateParts[0].trim();
+        String toTime = dateParts[1].trim();
+        String[] fromParts = fromFull.split(" ");
+
+        if (fromParts.length == 0) {
+            return null;
+        }
+
+        String toFull = fromParts[0] + " " + toTime;
+
+        try {
+            return new Event(description, fromFull, toFull);
+        } catch (KiwiException e) {
+            // Re-throw for proper handling in createTaskByType
+            throw e;
+        }
     }
 
     /**
@@ -164,49 +209,60 @@ public class Storage {
     public void saveTasks(ArrayList<Task> taskList) throws KiwiException {
         try {
             File dataDir = new File(this.dirPath);
-            // create data directory if it doesnt exist
             if (!dataDir.exists()) {
                 dataDir.mkdir();
             }
 
-            // write the data to text file
-            FileWriter fw = new FileWriter(filePath);
-            PrintWriter pw = new PrintWriter(fw);
-
-            taskList.stream()
-                .map(this::taskToPipeString)
-                .forEach(pw::println);
-
-            pw.close();
-            fw.close();
-
+            try (FileWriter fw = new FileWriter(filePath);
+                 PrintWriter pw = new PrintWriter(fw)) {
+                taskList.stream()
+                    .map(this::taskToPipeString)
+                    .forEach(pw::println);
+            }
         } catch (IOException e) {
-            throw new KiwiException("Unable to save this task");
+            throw new KiwiException("Unable to save tasks to file");
         }
     }
 
+    /**
+     * Converts a Task object to pipe-delimited storage format.
+     *
+     * Format:
+     * <ul>
+     * <li>T | done | description</li>
+     * <li>D | done | description | date</li>
+     * <li>E | done | description | from date to time</li>
+     * </ul>
+     *
+     * @param task the task to convert
+     * @return formatted string for storage
+     */
     private String taskToPipeString(Task task) {
-        String status = task.getStatusIcon();
-        String isDone = (status.equals("X")) ? "1" : "0";
+        String isDone = task.getStatusIcon().equals("X") ? "1" : "0";
 
         if (task instanceof ToDo) {
-            // T | done | description
-            return ("T | " + isDone + " | " + task.getDescription() + "\n");
-        } else if (task instanceof Deadline) {
-            // D | done | description | date
+            return String.format("T | %s | %s", isDone, task.getDescription());
+        }
+
+        if (task instanceof Deadline) {
             Deadline dl = (Deadline) task;
             String dueDate = dl.getDateTime()
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-            return ("D | " + isDone + " | " + task.getDescription() + " | "
-                    + dueDate + "\n");
-        } else {
-            // E | done | description | from-to
-            Event ev = (Event) task;
-            String eventDate = ev.getDateTime()
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            String timeRange = ev.getFrom() + " to " + ev.getTo();
-            return ("E | " + isDone + " | " + task.getDescription() + " | "
-                    + eventDate + " " + timeRange + "\n");
+            return String.format("D | %s | %s | %s", isDone, task.getDescription(), dueDate);
         }
+
+        if (task instanceof Event) {
+            Event ev = (Event) task;
+            String eventDate = ev.getFrom()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String fromTime = ev.getFrom()
+                    .format(DateTimeFormatter.ofPattern("HHmm"));
+            String toTime = ev.getTo()
+                    .format(DateTimeFormatter.ofPattern("HHmm"));
+            String timeRange = String.format("%s %s to %s", eventDate, fromTime, toTime);
+            return String.format("E | %s | %s | %s", isDone, task.getDescription(), timeRange);
+        }
+
+        return "";
     }
 }
