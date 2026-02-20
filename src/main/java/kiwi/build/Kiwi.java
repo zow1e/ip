@@ -14,21 +14,24 @@
  * @see kiwi.helper.TaskList
  * @see kiwi.helper.Ui
  * @see kiwi.helper.KiwiException
+ * @see kiwi.build.Cli
+ * @see kiwi.build.Gui
  */
 package kiwi.build;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import javafx.stage.Stage;
+import kiwi.helper.Cli;
+import kiwi.helper.Gui;
 import kiwi.helper.KiwiException;
 import kiwi.helper.Parser;
 import kiwi.helper.Storage;
 import kiwi.helper.TaskList;
 import kiwi.helper.Ui;
+
 
 /**
  * Core logic for the Kiwi task manager.
@@ -54,6 +57,11 @@ public class Kiwi {
     /** Manages the task collection. */
     private static TaskList tasks;
 
+    /** Manages CLI commands */
+    private Cli cli;
+
+    /** Manages GUI commands */
+    private Gui gui;
 
 
     /**
@@ -62,31 +70,35 @@ public class Kiwi {
     public Kiwi() {
         storage = new Storage(DATA_DIR, DATA_FILE);
         tasks = new TaskList(storage.loadTasks());
+        cli = new Cli(tasks);
+        gui = new Gui(tasks);
         assert tasks != null : "TaskList should not be null after initialization";
+    }
+
+    /**
+     * Sets the GUI stage reference for closing the application.
+     *
+     * @param stage the primary stage of the GUI application
+     */
+    public void setGuiStage(Stage stage) {
+        gui.setGuiStage(stage);
     }
 
     /**
      * Main entry point for CLI mode.
      *
-     * Initializes UI, storage, and task list. Enters interactive command loop
-     * until "bye" command is received. Handles all exceptions gracefully.
-     *
      * @param args command line arguments (unused)
      */
     public static void main(String[] args) {
-        ui.showWelcome();
-        initializeStorage();
-        ui.showTasks(tasks.getTasks());
-
-        runCliLoop();
+        Kiwi kiwi = new Kiwi();
+        kiwi.cli.showWelcome();
+        kiwi.runCliLoop();
     }
 
-    private static void initializeStorage() {
-        storage = new Storage(DATA_DIR, DATA_FILE);
-        tasks = new TaskList(storage.loadTasks());
-    }
-
-    private static void runCliLoop() {
+    /**
+     * Runs the CLI interactive loop.
+     */
+    private void runCliLoop() {
         Scanner scanner = new Scanner(System.in);
         boolean isActive = true;
 
@@ -96,86 +108,75 @@ public class Kiwi {
             try {
                 isActive = processCliCommand(input);
             } catch (KiwiException e) {
-                System.err.println(e.getMessage() + "\nPlease retry\n");
+                cli.showError(e.getMessage());
             } catch (NumberFormatException | IndexOutOfBoundsException e) {
-                System.err.println(INVALID_IDX_MSG);
+                cli.showInvalidIndexError();
             }
         }
         scanner.close();
     }
 
-    private static boolean processCliCommand(String input) throws KiwiException {
+    /**
+     * Processes a CLI command.
+     *
+     * @param input the user's command
+     * @return false if bye command, true otherwise
+     * @throws KiwiException if command parsing fails
+     */
+    private boolean processCliCommand(String input) throws KiwiException {
         Parser parsed = Parser.parse(input);
         String command = parsed.getType().toLowerCase();
 
         switch (command) {
         case "bye":
             storage.saveTasks(tasks.getTasks());
-            ui.showBye();
+            cli.showBye();
             return false;
 
         case "list":
-            ui.showTasks(tasks.getTasks());
+            cli.listTasks();
             break;
 
         case "todo":
-            addTaskCli(new ToDo(parsed.getArg(0)));
+            executeAddTask(new ToDo(parsed.getArg(0)), true);
             break;
 
         case "deadline":
-            addTaskCli(new Deadline(parsed.getArg(0), parsed.getArg(1)));
+            executeAddTask(new Deadline(parsed.getArg(0), parsed.getArg(1)), true);
             break;
 
         case "event":
-            addTaskCli(new Event(parsed.getArg(0), parsed.getArg(1), parsed.getArg(2)));
+            executeAddTask(new Event(parsed.getArg(0), parsed.getArg(1), parsed.getArg(2)), true);
             break;
 
         case "mark":
-            markTaskCli(Integer.parseInt(parsed.getArg(0)));
+            executeMark(Integer.parseInt(parsed.getArg(0)), true);
             break;
 
         case "unmark":
-            unmarkTaskCli(Integer.parseInt(parsed.getArg(0)));
+            executeUnmark(Integer.parseInt(parsed.getArg(0)), true);
             break;
 
         case "delete":
-            deleteTaskCli(Integer.parseInt(parsed.getArg(0)));
+            executeDelete(Integer.parseInt(parsed.getArg(0)), true);
             break;
 
         case "find":
-            findTasksCli(parsed.getArg(0).toLowerCase());
+            executeFindTasks(parsed.getArg(0).toLowerCase(), true);
+            break;
+
+        case "help":
+            cli.showHelp();
+            break;
+
+        case "clear":
+            executeClear(true);
             break;
 
         default:
             throw new KiwiException("Command not recognised!");
         }
         return true;
-    }
-
-    private static void addTaskCli(Task task) throws KiwiException {
-        Task finalTask = checkDuplicateDesc(task, false);
-        tasks.add(finalTask);
-        ui.showAddTask(finalTask, tasks.size());
-    }
-
-    private static void markTaskCli(int index) {
-        Task markTask = tasks.mark(index);
-        ui.showMarked(markTask);
-    }
-
-    private static void unmarkTaskCli(int index) {
-        Task unmarkTask = tasks.unmark(index);
-        ui.showUnmarked(unmarkTask);
-    }
-
-    private static void deleteTaskCli(int index) {
-        Task deleted = tasks.delete(index);
-        ui.showDeleted(deleted, tasks.size());
-    }
-
-    private static void findTasksCli(String keyword) {
-        ArrayList<Task> matchingTasks = tasks.find(keyword);
-        ui.showMatchingTasks(matchingTasks);
     }
 
     /**
@@ -192,93 +193,184 @@ public class Kiwi {
             assert parsed != null : "Parser should not return a null object";
             assert !command.isEmpty() : "Parsed command cannot be empty";
 
-            return handleGuiCommand(command, parsed);
+            return executeGuiCommand(command, parsed);
 
         } catch (KiwiException e) {
             return e.getMessage();
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            return INVALID_IDX_MSG;
+            return "Please enter a valid task number\n";
         }
     }
 
-    private String handleGuiCommand(String command, Parser parsed) throws KiwiException {
+    /**
+     * Executes a GUI command.
+     *
+     * @param command the command type
+     * @param parsed the parsed command
+     * @return the response message
+     * @throws KiwiException if command execution fails
+     */
+    private String executeGuiCommand(String command, Parser parsed) throws KiwiException {
         switch (command) {
         case "bye":
             storage.saveTasks(tasks.getTasks());
-            return "Byebye. Hope to see you again soon!";
+            gui.closeApplication();
+            return gui.formatByeMessage();
 
         case "list":
-            return formatTasks(tasks.getTasks());
+            return gui.formatTasks(tasks.getTasks());
 
         case "todo":
-            return addTaskGui(new ToDo(parsed.getArg(0)));
+            return executeAddTask(new ToDo(parsed.getArg(0)), false);
 
         case "deadline":
-            return addTaskGui(new Deadline(parsed.getArg(0), parsed.getArg(1)));
+            return executeAddTask(new Deadline(parsed.getArg(0), parsed.getArg(1)), false);
 
         case "event":
-            return addTaskGui(new Event(parsed.getArg(0), parsed.getArg(1), parsed.getArg(2)));
+            return executeAddTask(new Event(parsed.getArg(0), parsed.getArg(1), parsed.getArg(2)), false);
 
         case "mark":
-            return markTaskGui(Integer.parseInt(parsed.getArg(0)));
+            return executeMark(Integer.parseInt(parsed.getArg(0)), false);
 
         case "unmark":
-            return unmarkTaskGui(Integer.parseInt(parsed.getArg(0)));
+            return executeUnmark(Integer.parseInt(parsed.getArg(0)), false);
 
         case "delete":
-            return deleteTaskGui(Integer.parseInt(parsed.getArg(0)));
+            return executeDelete(Integer.parseInt(parsed.getArg(0)), false);
 
         case "find":
-            return formatTasks(tasks.find(parsed.getArg(0).toLowerCase()));
+            return gui.formatTasks(tasks.find(parsed.getArg(0).toLowerCase()));
+
+        case "help":
+            return gui.formatHelpMessage();
+
+        case "clear":
+            return executeClear(false);
 
         default:
             return "Command not recognised!";
         }
     }
 
-    private String markTaskGui(int index) {
-        validateIndex(index);
-        Task markTask = tasks.mark(index);
-        return "Nice! I've marked this task as done:\n  " + markTask;
-    }
+    /**
+     * Executes add task command.
+     *
+     * @param task the task to add
+     * @param isCliMode true for CLI, false for GUI
+     * @return response message (GUI only)
+     * @throws KiwiException if duplicate found in GUI mode
+     */
+    private String executeAddTask(Task task, boolean isCliMode) throws KiwiException {
+        Task finalTask = checkDuplicate(task, isCliMode);
+        tasks.add(finalTask);
 
-    private String unmarkTaskGui(int index) {
-        validateIndex(index);
-        Task unmarkTask = tasks.unmark(index);
-        return "OK, I've marked this task as not done yet:\n  " + unmarkTask;
-    }
-
-    private String deleteTaskGui(int index) {
-        Task deleted = tasks.delete(index);
-        return "Noted. I've removed this task:\n  " + deleted
-                + "\nNow you have " + tasks.size() + " tasks in the list.";
-    }
-
-    private void validateIndex(int index) {
-        assert index > 0 && index <= tasks.size() : INVALID_IDX_MSG;
-    }
-
-    private String formatTasks(ArrayList<Task> taskList) {
-        if (taskList.isEmpty()) {
-            return "No matching tasks found.";
+        if (isCliMode) {
+            cli.showAddedTask(finalTask);
+            return null;
+        } else {
+            return gui.formatAddedTask(finalTask);
         }
-        return IntStream.range(0, taskList.size())
-            .mapToObj(index -> (index + 1) + ". " + taskList.get(index))
-            .collect(Collectors.joining("\n", "Here are the tasks:\n", ""));
     }
 
     /**
-     * Checks if there is an existing task with the same description.
+     * Executes mark command.
      *
-     * In CLI mode: prompts user to replace or keep the existing task.
-     * In GUI mode: throws exception asking user to retry.
+     * @param index the task index
+     * @param isCliMode true for CLI, false for GUI
+     * @return response message (GUI only)
+     */
+    private String executeMark(int index, boolean isCliMode) {
+        Task marked = tasks.mark(index);
+
+        if (isCliMode) {
+            cli.showMarkedTask(marked);
+            return null;
+        } else {
+            return gui.formatMarkedTask(marked);
+        }
+    }
+
+    /**
+     * Executes unmark command.
      *
-     * @param newTask the newly created task
-     * @param isGuiMode true if running in GUI mode, false for CLI
-     * @return the task to keep (either newTask or an existing matching task)
+     * @param index the task index
+     * @param isCliMode true for CLI, false for GUI
+     * @return response message (GUI only)
+     */
+    private String executeUnmark(int index, boolean isCliMode) {
+        Task unmarked = tasks.unmark(index);
+
+        if (isCliMode) {
+            cli.showUnmarkedTask(unmarked);
+            return null;
+        } else {
+            return gui.formatUnmarkedTask(unmarked);
+        }
+    }
+
+    /**
+     * Executes delete command.
+     *
+     * @param index the task index
+     * @param isCliMode true for CLI, false for GUI
+     * @return response message (GUI only)
+     */
+    private String executeDelete(int index, boolean isCliMode) {
+        Task deleted = tasks.delete(index);
+
+        if (isCliMode) {
+            cli.showDeletedTask(deleted);
+            return null;
+        } else {
+            return gui.formatDeletedTask(deleted);
+        }
+    }
+
+    /**
+     * Executes find command.
+     *
+     * @param keyword the search keyword
+     * @param isCliMode true for CLI, false for GUI
+     */
+    private String executeFindTasks(String keyword, boolean isCliMode) {
+        var matching = tasks.find(keyword);
+
+        if (isCliMode) {
+            cli.showMatchingTasks(matching);
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Executes clear command.
+     *
+     * @param isCliMode true for CLI, false for GUI
+     * @return response message (GUI only)
+     */
+    private String executeClear(boolean isCliMode) {
+        if (isCliMode) {
+            if (cli.askConfirmClear()) {
+                tasks.getTasks().clear();
+                cli.showTasksCleared();
+            } else {
+                cli.showClearCancelled();
+            }
+            return null;
+        } else {
+            return gui.formatClearedTasks();
+        }
+    }
+
+    /**
+     * Checks for duplicate task descriptions.
+     *
+     * @param newTask the new task
+     * @param isCliMode true for CLI, false for GUI
+     * @return the final task to add
      * @throws KiwiException if duplicate found in GUI mode
      */
-    private static Task checkDuplicateDesc(Task newTask, boolean isGuiMode) throws KiwiException {
+    private Task checkDuplicate(Task newTask, boolean isCliMode) throws KiwiException {
         String newDesc = newTask.getDescription().toLowerCase();
 
         Optional<Task> duplicate = tasks.getTasks().stream()
@@ -290,28 +382,11 @@ public class Kiwi {
         }
 
         Task existing = duplicate.get();
-        return isGuiMode ? handleGuiDuplicate(existing) : handleCliDuplicate(existing, newTask);
-    }
 
-    private static Task handleGuiDuplicate(Task existing) throws KiwiException {
-        throw new KiwiException("Duplicate task found:\n  " + existing
-            + "\n\nUse the same command again to replace it, or use a different description.");
-    }
-
-    private static Task handleCliDuplicate(Task existing, Task newTask) {
-        System.out.println("!! Duplicate task found: " + existing);
-        System.out.print("Replace with new task? [y/n]: ");
-
-        Scanner scanner = new Scanner(System.in);
-        String choice = scanner.nextLine().trim().toLowerCase();
-        scanner.close();
-
-        return choice.equals("y") ? newTask : existing;
-    }
-
-    private static String addTaskGui(Task task) throws KiwiException {
-        Task finalTask = checkDuplicateDesc(task, true);
-        tasks.add(finalTask);
-        return "Added: " + task + "\nThere are now " + tasks.size() + " tasks in the list";
+        if (isCliMode) {
+            return cli.askReplaceDuplicate(existing) ? newTask : existing;
+        } else {
+            throw new KiwiException(gui.formatDuplicateMessage(existing));
+        }
     }
 }

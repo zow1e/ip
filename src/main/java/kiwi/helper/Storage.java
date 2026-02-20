@@ -212,6 +212,9 @@ public class Storage {
             if (!dataDir.exists()) {
                 dataDir.mkdir();
             }
+            if (taskList.isEmpty()) {
+                return;
+            }
 
             try (FileWriter fw = new FileWriter(filePath);
                  PrintWriter pw = new PrintWriter(fw)) {

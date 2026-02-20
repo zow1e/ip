@@ -67,6 +67,12 @@ public class Parser {
         case "delete":
             return parseIndexCommand(cmd, parts);
 
+        case "help":
+            return new Parser("help");
+
+        case "clear":
+            return new Parser("clear");
+
         case "bye":
             return new Parser("bye");
 

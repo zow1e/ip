@@ -120,4 +120,24 @@ public class Ui {
         }
         System.out.println();
     }
+
+    /**
+     * Formats help message for GUI display.
+     *
+     * @return formatted help message
+     */
+    public static String formatHelpMessage() {
+        StringBuilder help = new StringBuilder();
+        help.append("COMMAND FORMAT:\n\n");
+        help.append("todo <description>\n");
+        help.append("  Example: todo read book\n\n");
+        help.append("deadline <description> /by yyyy-MM-dd HHmm\n");
+        help.append("  Example: deadline CS2103T /by 2026-02-15 2359\n\n");
+        help.append("event <description> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm\n");
+        help.append("  Example: event meeting /from 2026-02-12 1400 /to 2026-02-12 1600\n\n");
+        help.append("mark <task number>     unmark <task number>\n");
+        help.append("delete <task number>   find <keyword>\n");
+        help.append("list                   clear                  help\n");
+        return help.toString();
+    }
 }
